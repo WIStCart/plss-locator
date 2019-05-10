@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>PLSS Locator</title>
+
+	<!-- Turf.js -->
+	<script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+
+	<!-- Jquery -->
+	<script
+		src="https://code.jquery.com/jquery-3.4.1.min.js"
+		integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+		crossorigin="anonymous"></script>
+
+	<!-- Sections Dataset -->
+	<script src='sections.js'></script>
+</head>
+<body>
+	<form id="coodinates" action="">
+		<label>Latitude:</label>
+		<input type="text" name="Latitude" value="43.0731">° N
+		<br><br>
+		<label>Longitude:</label>
+		<input type="text" name="Longitude" value="-89.4012">° E
+		<br><br>
+		<button id="submit" type="submit" form="coordinates" value="Submit">Submit</button>
+	</form>
+	<br><br>
+	<div id="output"></div>
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$('#submit').click(function() {
+				var lat = $("input[name='Latitude']").val();
+				var lon = $("input[name='Longitude']").val();
+				get_twp_sec(lat,lon);
+			});
+		})
+
+		function get_twp_sec(lat,lon) {
+
+			var point = turf.featureCollection( [turf.point([lon,lat])] );
+
+			var tagged = turf.tag(point, sections, 'DTRS', 'dtrs');
+
+			var dtrs = String(tagged.features[0].properties['dtrs']);
+
+			var d = parseInt(dtrs/1000000)
+
+			if(dir==2) {
+				var dir = "W";
+			} else {
+				var dir = "E";
+			}
+
+			var infoString = "T" + dtrs.substring(1,3) + "N R" + dtrs.substring(3,5) + dir + " S" + dtrs.substring(5,7);
+
+			$('#output').text(infoString)
+		}
+	</script>
+
+</body>
+</html>
