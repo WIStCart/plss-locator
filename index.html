@@ -14,6 +14,10 @@
 
 	<!-- Sections Dataset -->
 	<script src='sections.js'></script>
+
+	<!-- Leaflet -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
 </head>
 <body>
 	<form id="coodinates" action="">
@@ -25,18 +29,40 @@
 		<br><br>
 		<button id="submit" type="submit" form="coordinates" value="Submit">Submit</button>
 	</form>
+	<br>
+	-or-
 	<br><br>
-	<div id="output"></div>
+	Get location from device:
+	<button onclick="getLocation()">Get Location</button>
+	<br><br><br>
+	<h3 id="output"></h3>
+	<br><br>
+	<div id="map" style="height:500px; width:500px;"></div>
 
 	<script type="text/javascript">
+
+		// Get location from lat lon form
 		$(document).ready(function() {
 			$('#submit').click(function() {
 				var lat = $("input[name='Latitude']").val();
 				var lon = $("input[name='Longitude']").val();
-				get_twp_sec(lat,lon);
+				get_twp_sec(lat,lon)
+				// insert_map(lat,lon)
 			});
 		})
 
+		// Get location from device
+		function getLocation() {
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(function(position) {
+					get_twp_sec(position.coords.latitude,position.coords.longitude)
+				});
+			} else { 
+				$('#output').text("Geolocation is not supported by this browser.");
+			}
+		}
+
+		// Get the township and section from latitude and longitude
 		function get_twp_sec(lat,lon) {
 
 			var point = turf.featureCollection( [turf.point([lon,lat])] );
@@ -45,18 +71,52 @@
 
 			var dtrs = String(tagged.features[0].properties['dtrs']);
 
+			// Convert range direction to text
 			var d = parseInt(dtrs/1000000)
-
-			if(dir==2) {
-				var dir = "W";
-			} else {
-				var dir = "E";
-			}
+			if(dir==2) {var dir = "W"; } else {var dir = "E"; }
 
 			var infoString = "T" + dtrs.substring(1,3) + "N R" + dtrs.substring(3,5) + dir + " S" + dtrs.substring(5,7);
 
 			$('#output').text(infoString)
+
+			insert_map(lat,lon,dtrs)
 		}
+
+		// Insert map
+		function insert_map(lat,lon,dtrs) {
+
+			if (document.getElementById('map').firstChild != undefined) {
+				this.leafletMap.remove()
+			}
+
+			this.leafletMap = new L.map('map');
+
+			// Add baselayer
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				maxZoom: 19,
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(this.leafletMap);
+
+			// Add sections
+			var sectionStyle = {
+				"fillOpacity": 0,
+				"color": "#000",
+				"weight": 5,
+				"opacity": 0.7
+			};
+			var sectionsLayer = L.geoJSON(sections, {style: sectionStyle, filter: sectionFilter}).addTo(this.leafletMap);
+
+			function sectionFilter(feature) {
+				if (feature.properties.DTRS == dtrs) return true
+			}
+
+			// Add marker and set view to location
+			var marker = L.marker([lat,lon], {}).addTo(this.leafletMap);
+			this.leafletMap.setView([lat,lon], 15)
+
+		}
+		
+
 	</script>
 
 </body>
