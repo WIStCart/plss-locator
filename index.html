@@ -3,6 +3,8 @@
 <head>
 	<title>PLSS Locator</title>
 
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 	<!-- Turf.js -->
 	<script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
 
@@ -18,28 +20,64 @@
 	<!-- Leaflet -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
 	<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+
+	<style type="text/css">
+		body {
+			margin: 0;
+		}
+		form {
+			text-align: center;
+			margin-left: auto;
+			margin-right: auto;
+			margin-top: 1em;
+		}
+		#map {
+			position: absolute;
+			width: 100%;
+			top: 11em;
+			bottom: 0;
+		}
+		input {
+			width: 5em;
+		}
+		#output {
+			height: 1em;
+			text-align: center;
+		}
+		#get-device-location {
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+		}
+	</style>
 </head>
 <body>
-	<form id="coodinates" action="">
-		<label>Latitude:</label>
-		<input type="text" name="Latitude" value="43.0731">° N
-		<br><br>
-		<label>Longitude:</label>
-		<input type="text" name="Longitude" value="-89.4012">° E
-		<br><br>
-		<button id="submit" type="submit" form="coordinates" value="Submit">Submit</button>
-	</form>
-	<br>
-	-or-
-	<br><br>
-	Get location from device:
-	<button onclick="getLocation()">Get Location</button>
-	<br><br><br>
-	<h3 id="output"></h3>
-	<br><br>
-	<div id="map" style="height:500px; width:500px;"></div>
+	<div id="top">
+		<form action="">
+			<label>Latitude:</label>
+			<input type="number" name="Latitude" value="43.0731">
+			<label>Longitude:</label>
+			<input type="number" name="Longitude" value="-89.4012">
+			<button id="submit" type="submit" form="coordinates" value="Submit">Submit</button>
+		</form>
+		<br>
+		<button id="get-device-location" onclick="getLocation()">Get Device Location</button>
+
+		<h3 id="output"></h3>
+	</div>
+
+	<div id="map"></div>
+	
 
 	<script type="text/javascript">
+		// Init map
+		init_map()
+
+		// Zoom to WI
+		this.leafletMap.fitBounds([
+			[42.67435857693381, -92.801513671875],
+			[46.882723010671945, -86.868896484375]
+		])
 
 		// Get location from lat lon form
 		$(document).ready(function() {
@@ -47,7 +85,6 @@
 				var lat = $("input[name='Latitude']").val();
 				var lon = $("input[name='Longitude']").val();
 				get_twp_sec(lat,lon)
-				// insert_map(lat,lon)
 			});
 		})
 
@@ -79,16 +116,11 @@
 
 			$('#output').text(infoString)
 
-			insert_map(lat,lon,dtrs)
+			update_map(lat,lon,dtrs)
 		}
 
-		// Insert map
-		function insert_map(lat,lon,dtrs) {
-
-			if (document.getElementById('map').firstChild != undefined) {
-				this.leafletMap.remove()
-			}
-
+		// Update map
+		function init_map () {
 			this.leafletMap = new L.map('map');
 
 			// Add baselayer
@@ -96,6 +128,14 @@
 				maxZoom: 19,
 				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 			}).addTo(this.leafletMap);
+		}
+
+		// Insert map
+		function update_map(lat,lon,dtrs) {
+
+			this.leafletMap.remove()
+
+			init_map()
 
 			// Add sections
 			var sectionStyle = {
