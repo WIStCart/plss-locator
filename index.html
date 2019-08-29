@@ -1,163 +1,192 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>PLSS Locator</title>
+  <head>
+    <title>PLSS Locator</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <!-- Include Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+    <link href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" rel="stylesheet">
+    <!-- Include CARTO.js -->
+    <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.1.11/carto.min.js"></script>
+    <!-- Include Jquery -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="crossorigin="anonymous"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" type="text/css">
+    <style>
+      * { margin:0; padding:0; }
+      html { box-sizing:border-box; height:100%; }
+      body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Arial, sans-serif; }
+      #container { display:flex; width:100%; height:100%; }
+      #map { flex:1; margin:10px; }
+      #widgets { 
+        width: 300px;
+        margin: 10px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 999;
+        border: solid #babac3 10px;
+      }
+      .widget { background:white; padding:10px; }
+      .widget h1 { font-size:1.2em; }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="map"></div>
+      <div id="widgets">
+        <div id="townshipDescriptionWidget" class="widget">
+          <!-- <h1>DTRS</h1>
+          <p class="js-dtrs">-----</p>
+          <br> -->
+          <button id="get-device-location" onclick="getLocation()">Get Device Location</button>
+          <br>
+          <h1>Section</h1>
+          <p class="output">-----</p>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Set initial map view
+      const map = L.map('map').setView([45,-90], 7);
+      
+      // Adding Voyager Basemap
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png', {
+        maxZoom: 18
+      }).addTo(map);
 
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+      // Adding Voyager Labels
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        zIndex: 10
+      }).addTo(map);
 
-	<!-- Turf.js -->
-	<script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+      // Init client
+      var client = new carto.Client({
+        apiKey: '0dYpf-D3nqmKJfLnAjOmqQ',
+        username: 'sco-admin'
+      });
 
-	<!-- Jquery -->
-	<script
-		src="https://code.jquery.com/jquery-3.4.1.min.js"
-		integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-		crossorigin="anonymous"></script>
+      // Prep townships
+      const sectionsSource = new carto.source.SQL(`
+        SELECT * 
+        FROM "sco-admin".scobase_wi_plss_sections_24k
+      `);
 
-	<!-- Sections Dataset -->
-	<script src='sections.js'></script>
+      const sectionsStyle = new carto.style.CartoCSS(`
+        #layer {
+          polygon-fill: #162945;
+          polygon-opacity: 0;
+          ::outline {
+            line-width: 2;
+            line-color: #000;
+            line-opacity: 0.1;
+          }
+        }
+        #layer::labels[zoom>=13] {
+          text-size: 14;
+          text-name: [dtrs];
+          text-face-name: 'Lato Bold';
+          text-fill: #465159;
+          text-label-position-tolerance: 0;
+          text-halo-radius: 1;
+          text-halo-fill: #FFFFFF;
+          text-dy: -10;
+          text-allow-overlap: true;
+          text-placement: point;
+          text-placement-type: dummy;
+        }
+        #layer::labels[zoom>=17] {
+          text-size: 24;
+        }
+      `);
 
-	<!-- Leaflet -->
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
-	<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+      const sections = new carto.layer.Layer(sectionsSource, sectionsStyle, {
+        featureClickColumns: ['dtrs']
+      });
 
-	<style type="text/css">
-		body {
-			margin: 0;
-		}
-		form {
-			text-align: center;
-			margin-left: auto;
-			margin-right: auto;
-			margin-top: 1em;
-		}
-		#map {
-			position: absolute;
-			width: 100%;
-			top: 11em;
-			bottom: 0;
-		}
-		input {
-			width: 5em;
-		}
-		#output {
-			height: 1em;
-			text-align: center;
-		}
-		#get-device-location {
-			display: block;
-			margin-left: auto;
-			margin-right: auto;
-		}
-	</style>
-</head>
-<body>
-	<div id="top">
-		<form action="">
-			<label>Lat:</label>
-			<input type="number" name="Latitude" value="43.0731">
-			<label>Long:</label>
-			<input type="number" name="Longitude" value="-89.4012">
-			<button id="submit" type="submit" form="coordinates" value="Submit">Submit</button>
-		</form>
-		<br>
-		<button id="get-device-location" onclick="getLocation()">Get Device Location</button>
+      // Add townships layer
+      client.addLayers([sections]);
+      client.getLeafletLayer().addTo(map);
 
-		<h3 id="output"></h3>
-	</div>
+      // Add empty layer to add selected features into
+      var selectedFeature = L.geoJson().addTo(map);
 
-	<div id="map"></div>
-	
 
-	<script type="text/javascript">
-		// Init map
-		init_map()
 
-		// Zoom to WI
-		this.leafletMap.fitBounds([
-			[42.67435857693381, -92.801513671875],
-			[46.882723010671945, -86.868896484375]
-		])
+      // Get location from device
+      function getLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var latlng = L.latLng(position.coords.latitude,position.coords.longitude);
 
-		// Get location from lat lon form
-		$(document).ready(function() {
-			$('#submit').click(function() {
-				var lat = $("input[name='Latitude']").val();
-				var lon = $("input[name='Longitude']").val();
-				get_twp_sec(lat,lon)
-			});
-		})
+            get_twp_sec(latlng);
 
-		// Get location from device
-		function getLocation() {
-			if (navigator.geolocation) {
-				navigator.geolocation.getCurrentPosition(function(position) {
-					get_twp_sec(position.coords.latitude,position.coords.longitude)
-				});
-			} else { 
-				$('#output').text("Geolocation is not supported by this browser.");
-			}
-		}
+            // Fly to location on map
+            map.flyTo(latlng, 15,{
+              animate: true,
+              duration: 0.5
+            });
+          });
+        } else { 
+          $('.output').text("Geolocation is not supported by this browser.");
+        }
+      }
+      
+      // Set Global Variable that will hold the marker that goes at our location when found
+      var locationMarker = null;
 
-		// Get the township and section from latitude and longitude
-		function get_twp_sec(lat,lon) {
+      // Set marker icon
+      var redIcon = L.icon({
+        iconUrl: 'images/redIcon.png',
+        shadowUrl: 'images/marker-shadow.png',
+        iconAnchor: [13, 41]
+      });
 
-			var point = turf.featureCollection( [turf.point([lon,lat])] );
+      // Listen for a click event on the Map element
+      map.on('click', function(e){
+        addMarker(e.latlng);
+        selectSection(e.latlng);
+      });
 
-			var tagged = turf.tag(point, sections, 'DTRS', 'dtrs');
+      function addMarker(latlng) {
+        // remove locationMarker if on map
+        if(map.hasLayer(locationMarker)){
+          map.removeLayer(locationMarker);
+        };
 
-			var dtrs = String(tagged.features[0].properties['dtrs']);
+        locationMarker = L.marker(latlng, {icon: redIcon});
+        map.addLayer(locationMarker); 
+      }
 
-			// Convert range direction to text
-			var d = parseInt(dtrs/1000000)
-			if(dir==2) {var dir = "W"; } else {var dir = "E"; }
+      function selectSection(latlng) {
+        $.getJSON("https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM \"sco-admin\".scobase_wi_plss_sections_24k as sec WHERE ST_Contains(the_geom, ST_GeomFromText('POINT("+latlng.lng+" "+latlng.lat+")',4326));", function(data) {
+          selectedFeature.clearLayers();
+          selectedFeature.addData(data);
 
-			var infoString = "T" + dtrs.substring(1,3) + "N R" + dtrs.substring(3,5) + dir + " S" + dtrs.substring(5,7);
+          var dtrs = data.features[0].properties.dtrs.toString();
 
-			$('#output').text(infoString)
+          // Convert range direction to text
+          var d = parseInt(dtrs/1000000)
+          if(dir==2) {var dir = "W"; } else {var dir = "E"; }
 
-			update_map(lat,lon,dtrs)
-		}
+          var infoString = "T" + dtrs.substring(1,3) + "N R" + dtrs.substring(3,5) + dir + " S" + dtrs.substring(5,7);
 
-		// Update map
-		function init_map () {
-			this.leafletMap = new L.map('map');
+          $('.output').text(infoString)
+        });
+      }
 
-			// Add baselayer
-			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				maxZoom: 19,
-				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-			}).addTo(this.leafletMap);
-		}
+      // Get the township and section from latitude and longitude
+      function get_twp_sec(latlng) {
+        addMarker(latlng);
+        selectSection(latlng);
 
-		// Insert map
-		function update_map(lat,lon,dtrs) {
+        
 
-			this.leafletMap.remove()
+        // update_map(lat,lon,dtrs)
+      }
 
-			init_map()
-
-			// Add sections
-			var sectionStyle = {
-				"fillOpacity": 0,
-				"color": "#000",
-				"weight": 5,
-				"opacity": 0.7
-			};
-			var sectionsLayer = L.geoJSON(sections, {style: sectionStyle, filter: sectionFilter}).addTo(this.leafletMap);
-
-			function sectionFilter(feature) {
-				if (feature.properties.DTRS == dtrs) return true
-			}
-
-			// Add marker and set view to location
-			var marker = L.marker([lat,lon], {}).addTo(this.leafletMap);
-			this.leafletMap.setView([lat,lon], 15)
-
-		}
-		
-
-	</script>
-
-</body>
+    </script>
+  </body>
 </html>
