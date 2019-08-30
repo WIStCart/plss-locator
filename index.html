@@ -13,36 +13,40 @@
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="crossorigin="anonymous"></script>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" type="text/css">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style>
       * { margin:0; padding:0; }
       html { box-sizing:border-box; height:100%; }
       body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Arial, sans-serif; }
-      #container { display:flex; width:100%; height:100%; }
-      #map { flex:1; margin:10px; }
-      #widgets { 
-        width: 300px;
-        margin: 10px;
+      #map { 
         position: absolute;
-        top: 10px;
-        right: 10px;
+        height: 100%;
+        width: 100%;
+      }
+      #widgets {
         z-index: 999;
         border: solid #babac3 10px;
+        background:white;
+        padding:10px;
+        margin-top: 10px;
       }
-      .widget { background:white; padding:10px; }
-      .widget h1 { font-size:1.2em; }
+      #widgets .output {
+        margin-bottom: 0;
+      }
+      #widgets-container .row {
+        margin-right: 10px;
+      }
     </style>
   </head>
   <body>
-    <div id="container">
-      <div id="map"></div>
-      <div id="widgets">
-        <div id="townshipDescriptionWidget" class="widget">
-          <!-- <h1>DTRS</h1>
-          <p class="js-dtrs">-----</p>
-          <br> -->
-          <button id="get-device-location" onclick="getLocation()">Get Device Location</button>
-          <br>
-          <h1>Section</h1>
+    <div id="map"></div>
+    <div id="widgets-container">
+      <div class="row">
+        <div id="widgets" class="offset-lg-9 col-lg-3 offset-md-8 col-md-4 offset-sm-6 col-sm-6 offset-3 col-9">
+          <button id="get-device-location" class="col-12" onclick="getLocation()">Get Device Location</button>
+          <br><br>
+          <h3>Section</h3>
           <p class="output">-----</p>
         </div>
       </div>
