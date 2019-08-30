@@ -46,6 +46,11 @@
         <div id="widgets" class="offset-lg-9 col-lg-3 offset-md-8 col-md-4 offset-sm-6 col-sm-6 offset-3 col-9">
           <button id="get-device-location" class="col-12" onclick="getLocation()">Get Device Location</button>
           <br><br>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="basemapToggle">
+            <label class="custom-control-label" for="basemapToggle">Toggle Satellite</label>
+          </div>
+          <br>
           <h3>Section</h3>
           <p class="output">-----</p>
         </div>
@@ -54,22 +59,47 @@
     <script>
       // Set initial map view
       const map = L.map('map').setView([45,-90], 7);
+      map.createPane("backgroundPane").style.zIndex = 100;
+      map.createPane("foregroundPane").style.zIndex = 200;
       
-      // Adding Voyager Basemap
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png', {
-        maxZoom: 18
+      // Voyager Basemap
+      var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        pane:'backgroundPane'
       }).addTo(map);
 
+      map.addLayer(osm);
+
+      // Google Satellite Basemap
+      var google = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+          maxZoom: 20,
+          subdomains:['mt0','mt1','mt2','mt3'],
+          pane:'backgroundPane'
+      });
+
       // Adding Voyager Labels
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        zIndex: 10
-      }).addTo(map);
+      // L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}.png', {
+      //   maxZoom: 18,
+      //   zIndex: 10
+      // }).addTo(map);
 
       // Init client
       var client = new carto.Client({
         apiKey: '0dYpf-D3nqmKJfLnAjOmqQ',
         username: 'sco-admin'
+      });
+
+      $(document).ready(function() {
+
+        $('#basemapToggle').click(function() {
+          if(this.checked) {
+            map.removeLayer(osm);
+            map.addLayer(google);
+          } else {
+            map.removeLayer(google);
+            map.addLayer(osm);
+          }    
+        });
       });
 
       // Prep townships
@@ -84,25 +114,25 @@
           polygon-opacity: 0;
           ::outline {
             line-width: 2;
-            line-color: #000;
-            line-opacity: 0.1;
+            line-color: #dcdfe3;
+            line-opacity: 1;
           }
         }
+        #layer[zoom<13]::outline {
+          line-opacity: 0;
+        }
         #layer::labels[zoom>=13] {
-          text-size: 14;
+          text-size: 20;
           text-name: [dtrs];
           text-face-name: 'Lato Bold';
           text-fill: #465159;
           text-label-position-tolerance: 0;
-          text-halo-radius: 1;
+          text-halo-radius: 1.5;
           text-halo-fill: #FFFFFF;
           text-dy: -10;
           text-allow-overlap: true;
           text-placement: point;
           text-placement-type: dummy;
-        }
-        #layer::labels[zoom>=17] {
-          text-size: 24;
         }
       `);
 
@@ -111,7 +141,7 @@
       });
 
       // Add townships layer
-      client.addLayers([sections]);
+      client.addLayers([sections],{pane:'foregroundPane'});
       client.getLeafletLayer().addTo(map);
 
       // Add empty layer to add selected features into
