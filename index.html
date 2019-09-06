@@ -62,7 +62,7 @@
       map.createPane("backgroundPane").style.zIndex = 100;
       map.createPane("foregroundPane").style.zIndex = 200;
       
-      // Voyager Basemap
+      // OSM Basemap
       var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         pane:'backgroundPane'
@@ -77,15 +77,9 @@
           pane:'backgroundPane'
       });
 
-      // Adding Voyager Labels
-      // L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}.png', {
-      //   maxZoom: 18,
-      //   zIndex: 10
-      // }).addTo(map);
-
       // Init client
       var client = new carto.Client({
-        apiKey: '0dYpf-D3nqmKJfLnAjOmqQ',
+        apiKey: 'x8vPLNqzI5hRLT6RV-922Q',
         username: 'sco-admin'
       });
 
@@ -103,9 +97,84 @@
       });
 
       // Prep townships
+      const townshipsSource = new carto.source.SQL(`
+        SELECT *, 
+        CASE
+          WHEN dir=2 THEN 'W'
+            WHEN dir=4 THEN 'E'
+            ELSE NULL
+        END AS west_east
+        FROM "sco-admin".scobase_wi_plss_townships_24k
+      `);
       const sectionsSource = new carto.source.SQL(`
         SELECT * 
         FROM "sco-admin".scobase_wi_plss_sections_24k
+      `);
+      const qsectionsSource = new carto.source.SQL(`
+        SELECT *,
+        CASE
+          WHEN q=1 THEN 'NE'
+            WHEN q=2 THEN 'NW'
+            WHEN q=3 THEN 'SW'
+            WHEN q=4 THEN 'SE'
+            ELSE NULL
+        END AS q_text
+        FROM "sco-admin".scobase_wi_plss_qsections_24k
+      `);
+      const qqsectionsSource = new carto.source.SQL(`
+        SELECT *, 
+        CASE
+          WHEN d=2 THEN 'W'
+            WHEN d=4 THEN 'E'
+            ELSE NULL
+        END AS dir,
+        CASE
+          WHEN q=1 THEN 'NE'
+          WHEN q=2 THEN 'NW'
+          WHEN q=3 THEN 'SW'
+          WHEN q=4 THEN 'SE'
+          ELSE NULL
+        END AS q_text,
+        CASE
+          WHEN qq=1 THEN 'NE'
+          WHEN qq=2 THEN 'NW'
+          WHEN qq=3 THEN 'SW'
+          WHEN qq=4 THEN 'SE'
+          ELSE NULL
+        END AS qq_text
+        FROM "sco-admin".scobase_wi_plss_qqsections_24k
+      `);
+
+      const townshipsStyle = new carto.style.CartoCSS(`
+        #layer {
+          polygon-fill: #162945;
+          polygon-opacity: 0;
+
+          ::outline {
+            line-width: 4;
+            line-color: #000;
+            line-opacity: 0.25;
+
+            [zoom<9] {
+              line-opacity: 0;
+            }
+          }
+
+          ::labels {
+            [zoom>=11][zoom<13] {
+              text-size: 20;
+              text-name: 'TWP '+[twp]+' N\\nRNG '+[rng]+' '+[west_east];
+              text-face-name: 'Lato Bold';
+              text-fill: #465159;
+              text-label-position-tolerance: 0;
+              text-halo-radius: 1.5;
+              text-halo-fill: #FFFFFF;
+              text-allow-overlap: true;
+              text-placement: point;
+              text-placement-type: dummy;
+            }
+          }
+        }
       `);
 
       const sectionsStyle = new carto.style.CartoCSS(`
@@ -114,40 +183,150 @@
           polygon-opacity: 0;
           ::outline {
             line-width: 2;
-            line-color: #dcdfe3;
-            line-opacity: 1;
+            line-color: #000; /* dcdfe3 */
+            line-opacity: 0.25;
+
+            [zoom<13] {
+              line-opacity: 0;
+            }
           }
-        }
-        #layer[zoom<13]::outline {
-          line-opacity: 0;
-        }
-        #layer::labels[zoom>=13] {
-          text-size: 20;
-          text-name: [dtrs];
-          text-face-name: 'Lato Bold';
-          text-fill: #465159;
-          text-label-position-tolerance: 0;
-          text-halo-radius: 1.5;
-          text-halo-fill: #FFFFFF;
-          text-dy: -10;
-          text-allow-overlap: true;
-          text-placement: point;
-          text-placement-type: dummy;
+          
+          ::labels {
+            [zoom>=13] {
+              text-size: 20;
+              text-name: 'SEC\\n'+[sec];
+              text-face-name: 'Lato Bold';
+              text-fill: #465159;
+              text-label-position-tolerance: 0;
+              text-halo-radius: 1.5;
+              text-halo-fill: #FFFFFF;
+              text-allow-overlap: true;
+              text-placement: point;
+              text-placement-type: dummy;
+            }
+            [zoom>=14] {
+              text-size: 36;
+            }
+            [zoom>=15] {
+              text-size: 52;
+            }
+            [zoom>=16] {
+              text-size: 72;
+            }
+          }
         }
       `);
 
-      const sections = new carto.layer.Layer(sectionsSource, sectionsStyle, {
-        featureClickColumns: ['dtrs']
-      });
+      const qsectionsStyle = new carto.style.CartoCSS(`
+        #layer {
+          polygon-fill: #162945;
+          polygon-opacity: 0;
+          ::outline {
+            line-width: 1;
+            line-color: #727d85;
+            line-opacity: 0.25;
 
-      // Add townships layer
+            [zoom<14] {
+              line-opacity: 0;
+            }
+          }
+          
+          ::labels {
+            [zoom>=14] {
+              text-size: 20;
+              text-name: '[q_text]';
+              text-face-name: 'Lato Bold';
+              text-fill: #727d85;
+              text-label-position-tolerance: 0;
+              text-halo-radius: 1.5;
+              text-halo-fill: #FFFFFF;
+              text-allow-overlap: true;
+              text-placement: point;
+              text-placement-type: dummy;
+            }
+            [zoom>=15] {
+              text-size: 36;
+            }
+            [zoom>=16] {
+              text-size: 52;
+            }
+          }
+        }
+      `);
+
+      const qqsectionsStyle = new carto.style.CartoCSS(`
+        #layer {
+          polygon-fill: #162945;
+          polygon-opacity: 0;
+          ::outline {
+            line-width: 1;
+            line-color: #99a2a8;
+            line-opacity: 0.25;
+            line-dasharray: 8,16;
+
+            [zoom<15] {
+              line-opacity: 0;
+            }
+          }
+          
+          ::labels {
+            [zoom>=15] {
+              text-size: 20;
+              text-name: [qq_text];
+              text-face-name: 'Lato Bold';
+              text-fill: #99a2a8;
+              text-label-position-tolerance: 0;
+              text-halo-radius: 1.5;
+              text-halo-fill: #FFFFFF;
+              text-allow-overlap: true;
+              text-placement: point;
+              text-placement-type: dummy;
+            }
+            [zoom>=17] {
+              text-size: 36;
+            }
+            [zoom>=19] {
+              text-size: 52;
+            }
+          }
+        }
+      `);
+
+
+
+      const townships = new carto.layer.Layer(townshipsSource, townshipsStyle, {});
+
+      const sections = new carto.layer.Layer(sectionsSource, sectionsStyle, {});
+
+      const qsections = new carto.layer.Layer(qsectionsSource, qsectionsStyle, {});
+
+      const qqsections = new carto.layer.Layer(qqsectionsSource, qqsectionsStyle, {});
+
+      // Add qqsections layer
+      client.addLayers([qqsections],{pane:'foregroundPane'});
+      client.getLeafletLayer().addTo(map);
+
+      // Add qsections layer
+      client.addLayers([qsections],{pane:'foregroundPane'});
+      client.getLeafletLayer().addTo(map);
+
+      // Add sections layer
       client.addLayers([sections],{pane:'foregroundPane'});
       client.getLeafletLayer().addTo(map);
 
+      // Add townships layer
+      client.addLayers([townships],{pane:'foregroundPane'});
+      client.getLeafletLayer().addTo(map);
+
       // Add empty layer to add selected features into
-      var selectedFeature = L.geoJson().addTo(map);
-
-
+      var selectedStyle = {
+        "color": "#e8b756",
+        "fillOpacity": 0.1,
+        "weight": 4,
+        "opacity": 0.75
+        
+      };
+      var selectedFeatures = L.geoJson(null,{style: selectedStyle}).addTo(map);
 
       // Get location from device
       function getLocation() {
@@ -181,7 +360,7 @@
       // Listen for a click event on the Map element
       map.on('click', function(e){
         addMarker(e.latlng);
-        selectSection(e.latlng);
+        selectFeatures(e.latlng);
       });
 
       function addMarker(latlng) {
@@ -194,31 +373,43 @@
         map.addLayer(locationMarker); 
       }
 
-      function selectSection(latlng) {
-        $.getJSON("https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM \"sco-admin\".scobase_wi_plss_sections_24k as sec WHERE ST_Contains(the_geom, ST_GeomFromText('POINT("+latlng.lng+" "+latlng.lat+")',4326));", function(data) {
-          selectedFeature.clearLayers();
-          selectedFeature.addData(data);
+      function selectFeatures(latlng) {
+        selectedFeatures.clearLayers();
 
-          var dtrs = data.features[0].properties.dtrs.toString();
+        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM "sco-admin".scobase_wi_plss_townships_24k WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
+          selectedFeatures.addData(data);
+        });
+        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM "sco-admin".scobase_wi_plss_sections_24k WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
+          selectedFeatures.addData(data);
+        });
+        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM "sco-admin".scobase_wi_plss_qsections_24k WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
+          selectedFeatures.addData(data);
+        });
+        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT *, CASE WHEN d=2 THEN 'W'WHEN d=4 THEN 'E'ELSE NULL END AS dir, CASE WHEN q=1 THEN 'NE'WHEN q=2 THEN 'NW'WHEN q=3 THEN 'SW'WHEN q=4 THEN 'SE'ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE'WHEN qq=2 THEN 'NW'WHEN qq=3 THEN 'SW'WHEN qq=4 THEN 'SE'ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k as qqsec WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
+          selectedFeatures.addData(data);
 
-          // Convert range direction to text
-          var d = parseInt(dtrs/1000000)
-          if(dir==2) {var dir = "W"; } else {var dir = "E"; }
+          var properties = data.features[0].properties
+          var dir = properties.dir.toString();
+          var twp = properties.t.toString();
+          var rng = properties.r.toString();
+          var sec = properties.s.toString();
+          var q   = properties.q_text.toString();
+          var qq  = properties.qq_text.toString();
 
-          var infoString = "T" + dtrs.substring(1,3) + "N R" + dtrs.substring(3,5) + dir + " S" + dtrs.substring(5,7);
+          var infoString = "Township: " + twp + " N" + 
+            "<br>Range: " + rng + dir + 
+            "<br>Section: " + sec + 
+            "<br>Quarter Section: " + q +
+            "<br>Quarter Quarter Section: " + qq;
 
-          $('.output').text(infoString)
+          $('.output').html(infoString)
         });
       }
 
       // Get the township and section from latitude and longitude
       function get_twp_sec(latlng) {
         addMarker(latlng);
-        selectSection(latlng);
-
-        
-
-        // update_map(lat,lon,dtrs)
+        selectFeatures(latlng);
       }
 
     </script>
