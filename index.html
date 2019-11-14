@@ -5,16 +5,26 @@
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
     <!-- Include Leaflet -->
-    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+    
     <link href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" rel="stylesheet">
     <!-- Include CARTO.js -->
     <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.1.11/carto.min.js"></script>
-    <!-- Include Jquery -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="crossorigin="anonymous"></script>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" type="text/css">
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Leaflet Search Control -->
+    <link rel="stylesheet" href="https://dev.sco.wisc.edu/searchControl/Joe/searchControl/searchControl.css">
+    
+    <!-- Include Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+    <!-- Include Jquery -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="crossorigin="anonymous"></script>
+    <!-- Needed for the Search Control -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://dev.sco.wisc.edu/searchControl/Joe/searchControl/searchControl.js"></script>
+    
     <style>
       * { margin:0; padding:0; }
       html { box-sizing:border-box; height:100%; }
@@ -37,6 +47,18 @@
       #widgets-container .row {
         margin-right: 10px;
       }
+      .searchControl-container {
+        box-shadow: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 3px;
+        background: white;
+        border: 2px solid rgba(0,0,0,0.2);
+      }
+      #searchText-div {
+        fill: black;
+        line-height: 30px;
+      }
     </style>
   </head>
   <body>
@@ -56,6 +78,8 @@
         </div>
       </div>
     </div>
+
+
     <script>
       // Set initial map view
       const map = L.map('map').setView([45,-90], 7);
@@ -75,6 +99,21 @@
           maxZoom: 20,
           subdomains:['mt0','mt1','mt2','mt3'],
           pane:'backgroundPane'
+      });
+
+      // Add search control
+      $(map).addSearchControl({
+        latLng: true,
+        address: true,
+        gazeteer: true,
+        county: true,
+        cityTownVillage: true,
+        twnRng: false,
+        twnRngSec: false,
+        quad: false,
+        position: 'topleft',
+        order: ["latLng", "address", "gazetteer", "county", "cityTownVillage"],
+        searchText: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8"> <path d="M3.5 0c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5c.59 0 1.17-.14 1.66-.41a1 1 0 0 0 .13.13l1 1a1.02 1.02 0 1 0 1.44-1.44l-1-1a1 1 0 0 0-.16-.13c.27-.49.44-1.06.44-1.66 0-1.93-1.57-3.5-3.5-3.5zm0 1c1.39 0 2.5 1.11 2.5 2.5 0 .66-.24 1.27-.66 1.72-.01.01-.02.02-.03.03a1 1 0 0 0-.13.13c-.44.4-1.04.63-1.69.63-1.39 0-2.5-1.11-2.5-2.5s1.11-2.5 2.5-2.5z"/> </svg>'
       });
 
       // Init client
@@ -396,7 +435,7 @@
           var q   = properties.q_text.toString();
           var qq  = properties.qq_text.toString();
 
-          var infoString = "Township: " + twp + " N" + 
+          var infoString = "Township: " + twp + "N" + 
             "<br>Range: " + rng + dir + 
             "<br>Section: " + sec + 
             "<br>Quarter Section: " + q +
@@ -413,5 +452,6 @@
       }
 
     </script>
+
   </body>
 </html>
