@@ -73,6 +73,7 @@
             <label class="custom-control-label" for="basemapToggle">Toggle Satellite</label>
           </div>
           <br>
+          <p>Lat/Long: <span class="lat-long-output"></span></p>
           <h3>PLSS Info:</h3>
           <p class="output">-----</p>
         </div>
@@ -442,6 +443,7 @@
             "<br>Quarter Quarter Section: " + qq;
 
           $('.output').html(infoString)
+          $('.lat-long-output').html(latlng.lng.toPrecision(6) + `, ` + latlng.lat.toPrecision(6))
         });
       }
 
