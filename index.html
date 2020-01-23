@@ -194,9 +194,21 @@
             line-width: 4;
             line-color: #000;
             line-opacity: 0.25;
-
-            [zoom<9] {
+            
+            [zoom < 8] {
               line-opacity: 0;
+            }
+            [zoom=8] {
+              line-opacity: 0.05;
+            }
+            [zoom=9]{
+              line-opacity: 0.1;
+            }
+            [zoom=10]{
+              line-opacity: 0.2;
+            }
+            [zoom>10]{
+              line-opacity: 0.25;
             }
           }
 
