@@ -440,6 +440,15 @@
         $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT *, CASE WHEN d=2 THEN 'W'WHEN d=4 THEN 'E'ELSE NULL END AS dir, CASE WHEN q=1 THEN 'NE'WHEN q=2 THEN 'NW'WHEN q=3 THEN 'SW'WHEN q=4 THEN 'SE'ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE'WHEN qq=2 THEN 'NW'WHEN qq=3 THEN 'SW'WHEN qq=4 THEN 'SE'ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k as qqsec WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
           selectedFeatures.addData(data);
 
+          var cardinalDir = {
+            'W': "West",
+            'E': "East",
+            'NW': 'Northwest',
+            'NE': 'Northeast',
+            'SE': 'Southeast',
+            'SW': 'Southwest'
+          };
+
           var properties = data.features[0].properties
           var dir = properties.dir.toString();
           var twp = properties.t.toString();
@@ -447,12 +456,17 @@
           var sec = properties.s.toString();
           var q   = properties.q_text.toString();
           var qq  = properties.qq_text.toString();
+          var qText = cardinalDir[q];
+          var qqText = cardinalDir[qq];
+          var dirText = cardinalDir[dir];
 
           var infoString = "Township: " + twp + "N" + 
             "<br>Range: " + rng + dir + 
             "<br>Section: " + sec + 
             "<br>Quarter Section: " + q +
-            "<br>Quarter Quarter Section: " + qq;
+            "<br>Quarter Quarter Section: " + qq +
+            "<br>" + 
+            "<br>The " + qqText + " quarter of " + qText + " quarter of Section " + sec + " of Township " + twp + " North, Range " + rng + " " + dirText + ", fourth Principal Meridian.";
 
           $('.output').html(infoString)
           $('.lat-long-output').html(latlng.lng.toPrecision(6) + `, ` + latlng.lat.toPrecision(6))
