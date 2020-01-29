@@ -441,12 +441,14 @@
           selectedFeatures.addData(data);
 
           var cardinalDir = {
-            'W': "West",
-            'E': "East",
-            'NW': 'Northwest',
-            'NE': 'Northeast',
-            'SE': 'Southeast',
-            'SW': 'Southwest'
+            'N' : 'north',
+            'E': 'east',
+            'S' : 'south',
+            'W': "west",
+            'NW': 'northwest',
+            'NE': 'northeast',
+            'SE': 'southeast',
+            'SW': 'southwest'
           };
 
           var properties = data.features[0].properties
@@ -466,7 +468,7 @@
             "<br>Quarter Section: " + q +
             "<br>Quarter Quarter Section: " + qq +
             "<br>" + 
-            "<br>The " + qqText + " quarter of " + qText + " quarter of Section " + sec + " of Township " + twp + " North, Range " + rng + " " + dirText + ", fourth Principal Meridian.";
+            "<br>The " + qqText + " quarter of the " + qText + " quarter of Section " + sec + ", Township " + twp + " north, Range " + rng + " " + dirText + ", fourth Principal Meridian.";
 
           $('.output').html(infoString)
           $('.lat-long-output').html(latlng.lng.toPrecision(6) + `, ` + latlng.lat.toPrecision(6))
