@@ -80,7 +80,7 @@
     <div id="map"></div>
     <div id="widgets-container">
       <div class="row">
-        <span/span id="widgets" class="offset-lg-9 col-lg-3 offset-md-8 col-md-4 offset-sm-6 col-sm-6 offset-3 col-9">
+        <span id="widgets" class="offset-lg-9 col-lg-3 offset-md-8 col-md-4 offset-sm-6 col-sm-6 offset-3 col-9">
           <button id="get-device-location" class="col-12" onclick="getLocation()">Get Device Location</button>
           <br><br>
           <div class="custom-control custom-switch">
@@ -90,18 +90,14 @@
           <br>
           <p>Lat/Long: <span class="lat-long-output"></span></p>
           <h3>PLSS Info:</h3>
-          <p class ="output"></p>
-          <span id= "township-within">------</span>
-          <span id= "township-nearby"></span>
-          <span id= "range-within"></span>
-          <span id= "range-nearby"></span>
-          <span id= "section-within"></span>
-          <span id= "section-nearby"></span>
-          <span id= "quarter-within"></span>
-          <span id= "quarter-nearby"></span>
-          <span id= "qq-within"></span>
-          <span id= "qq-nearby"></span>
-        </div>
+          <p class ="output">
+            <span id="township-within">------</span><span id="township-nearby"></span>
+            <span id="range-within"></span><span id="range-nearby"></span>
+            <span id="section-within"></span><span id="section-nearby"></span>
+            <span id="quarter-within"></span><span id="quarter-nearby"></span>
+            <span id="qq-within"></span><span id="qq-nearby"></span>
+          </p>
+        </span>
       </div>
     </div>
 
@@ -491,114 +487,71 @@
 
       // Select features within a specified distance of the current location
       function selectNearbyFeatures(latlng){
-        selectedFeatures.clearLayers();
 
+        // Clear nearby numbers while query runs
         $('#township-nearby').html("")
         $('#range-nearby').html("")
         $('#section-nearby').html("")
         $('#quarter-nearby').html("")
         $('#qq-nearby').html("")
+
+        // Query quarter quarter sections to get nearby info
         $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT *, CASE WHEN d=2 THEN 'W'WHEN d=4 THEN 'E'ELSE NULL END AS dir, CASE WHEN q=1 THEN 'NE'WHEN q=2 THEN 'NW'WHEN q=3 THEN 'SW'WHEN q=4 THEN 'SE'ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE'WHEN qq=2 THEN 'NW'WHEN qq=3 THEN 'SW'WHEN qq=4 THEN 'SE'ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k AS qqsections WHERE ST_DWithin( ST_Transform(qqsections.the_geom, 3070), ST_Transform(ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326), 3070), 60 ) AND NOT ST_Contains( qqsections.the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
 
-          var properties = "";
-          var addProperties = "";
-          var moreProperties = "";
+          // Exit function if there is nothing nearby
+          if (data.features.length===0) { return }
+
+          // Create nearby object with empty arrays to store values
+          var nearby = {
+            twp: [],
+            rng: [],
+            sec: [],
+            q: [],
+            qq: []
+          };
+
+          var within = {
+            twp: $('#township-within').text().split(' ').pop(-1),
+            rng: $('#range-within').text().split(' ').pop(-1),
+            sec: $('#section-within').text().split(' ').pop(-1),
+            q:   $('#quarter-within').text().split(' ').pop(-1),
+            qq:  $('#qq-within').text().split(' ').pop(-1)
+          };
           
-          if (data.features[0]){
-            properties = data.features[0].properties;
-            var dir = properties.dir.toString();
-            var twp = properties.t.toString();
-            var rng = properties.r.toString();
+          // For each feature
+          for (i=0; i<data.features.length; i++) {
+            // Grab properties
+            properties = data.features[i].properties;
+
+            var twp = properties.t.toString() + 'N';
+            var rng = properties.r.toString() + properties.dir.toString();
             var sec = properties.s.toString();
             var q   = properties.q_text.toString();
             var qq  = properties.qq_text.toString();
-          }else{
-            var dir = "";
-            var twp = "";
-            var rng = "";
-            var sec = "";
-            var q   = "";
-            var qq  = "";
+
+            // Insert new values into nearby lists
+            if (!nearby.twp.includes(twp) && within.twp!==twp){ nearby.twp.push(twp) }
+            if (!nearby.rng.includes(rng) && within.rng!==rng){ nearby.rng.push(rng) }
+            if (!nearby.sec.includes(sec) && within.sec!==sec){ nearby.sec.push(sec) }
+            if (!nearby.q.includes(q) && within.q!==q){ nearby.q.push(q) }
+            if (!nearby.qq.includes(qq) && within.qq!==qq){ nearby.qq.push(qq) }
           }
 
-          if (data.features[1]){
-            addProperties = data.features[1].properties;
-            var addSec = addProperties.s.toString();
-            var addQ   = addProperties.q_text.toString();
-            var addQQ  = addProperties.qq_text.toString();
-          }else{
-            var addSec = "";
-            var addQ   = "";
-            var addQQ  = "";
+          // Insert nearby info into html
+          if (!nearby.twp.length == 0){
+            $('#township-nearby').html(' nearby ' + nearby.twp.toString().replace(',', ', '));
           }
-
-          if (data.features[2]){
-            moreProperties = data.features[2].properties;
-            var moreSec = moreProperties.s.toString();
-            var moreQ   = moreProperties.q_text.toString();
-            var moreQQ  = moreProperties.qq_text.toString();
-          }else{
-            var moreSec = "";
-            var moreQ   = "";
-            var moreQQ  = "";
+          if (!nearby.rng.length == 0){
+            $('#range-nearby').html(' nearby ' + nearby.rng.toString().replace(',', ', '));
           }
-
-          var townshipNearbyStr = "nearby " + twp + "N";
-          var rangeNearbyStr = "nearby " + rng + dir;
-          var sectionNearbyStr =  "nearby " + sec; 
-          var qSectionNearbyStr =  "nearby " + q;
-          var qqSectionNearbyStr =  "nearby " + qq;
-          var addSectionNearbyStr =  " nearby " + addSec; 
-          var addQSectionNearbyStr =  " nearby " + addQ;
-          var addQQSectionNearbyStr =  " nearby " + addQQ;
-          var moreSectionNearbyStr =  " nearby " + moreSec; 
-          var moreQSectionNearbyStr =  " nearby " + moreQ;
-          var moreQQSectionNearbyStr =  " nearby " + moreQQ;
-          
-          var townshipWithin = $('#township-within').text();
-          var rangeWithin = $('#range-within').text();
-          var sectionWithin = $('#section-within').text();
-          var quarterWithin = $('#quarter-within').text();
-          var qqWithin = $('#qq-within').text();
-
-          if (townshipWithin.includes(twp) == false){
-            $('#township-nearby').html(townshipNearbyStr);
+          if (!nearby.sec.length == 0){
+            $('#section-nearby').html(' nearby ' + nearby.sec.toString().replace(',', ', '));
           }
-          if (rangeWithin.includes(rng) == false){
-              $('#range-nearby').html(rangeNearbyStr);
+          if (!nearby.q.length == 0){
+            $('#quarter-nearby').html(' nearby ' + nearby.q.toString().replace(',', ', '));
           }
-          if (sectionWithin.includes(sec) == false){
-            if (addSec != "" && sec != addSec){
-              if (moreSec != "" && addSec != moreSec && sec != moreSec ){
-                $('#section-nearby').html(sectionNearbyStr + addSectionNearbyStr + moreSectionNearbyStr);
-              }else{
-                $('#section-nearby').html(sectionNearbyStr + addSectionNearbyStr);
-              }
-            }else{
-              $('#section-nearby').html(sectionNearbyStr);
-            }
-          }
-          if (quarterWithin.includes(q) == false){
-            if (addQ != "" && addQ != q){
-              if (moreQ != "" && addQ != moreQ && q != moreQ){
-                $('#quarter-nearby').html(qSectionNearbyStr + addQSectionNearbyStr + moreQSectionNearbyStr);
-              }else{
-                $('#quarter-nearby').html(qSectionNearbyStr + addQSectionNearbyStr);
-              }
-            }else{
-              $('#quarter-nearby').html(qSectionNearbyStr);
-            }
-          }
-          if (qqWithin.includes(qq) == false){
-            if (addQQ != "" && addQQ != qq){
-              if (moreQQ != "" && addQQ != moreQQ && qq != moreQQ) {
-                $('#qq-nearby').html(qqSectionNearbyStr + addQQSectionNearbyStr + moreQQSectionNearbyStr);
-              }else{
-                $('#qq-nearby').html(qqSectionNearbyStr + addQQSectionNearbyStr);
-              }
-            }else{
-              $('#qq-nearby').html(qqSectionNearbyStr);
-            }
+          if (!nearby.qq.length == 0){
+            $('#qq-nearby').html(' nearby ' + nearby.qq.toString().replace(',', ', '));
           }
         }); 
       }
