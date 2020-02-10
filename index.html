@@ -539,19 +539,19 @@
 
           // Insert nearby info into html
           if (!nearby.twp.length == 0){
-            $('#township-nearby').html(' nearby ' + nearby.twp.toString().replace(',', ', '));
+            $('#township-nearby').html(' nearby ' + nearby.twp.join(', '));
           }
           if (!nearby.rng.length == 0){
-            $('#range-nearby').html(' nearby ' + nearby.rng.toString().replace(',', ', '));
+            $('#range-nearby').html(' nearby ' + nearby.rng.join(', '));
           }
           if (!nearby.sec.length == 0){
-            $('#section-nearby').html(' nearby ' + nearby.sec.toString().replace(',', ', '));
+            $('#section-nearby').html(' nearby ' + nearby.sec.join(', '));
           }
           if (!nearby.q.length == 0){
-            $('#quarter-nearby').html(' nearby ' + nearby.q.toString().replace(',', ', '));
+            $('#quarter-nearby').html(' nearby ' + nearby.q.join(', '));
           }
           if (!nearby.qq.length == 0){
-            $('#qq-nearby').html(' nearby ' + nearby.qq.toString().replace(',', ', '));
+            $('#qq-nearby').html(' nearby ' + nearby.qq.join(', '));
           }
         }); 
       }
