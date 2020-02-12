@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-129066-17"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-129066-17');
+    </script>
+
     <title>PLSS Locator</title>
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
+
     <!-- Include Leaflet -->
-    
     <link href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" rel="stylesheet">
     <!-- Include CARTO.js -->
     <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.1.11/carto.min.js"></script>
@@ -463,6 +473,17 @@
         $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT *, CASE WHEN d=2 THEN 'W'WHEN d=4 THEN 'E'ELSE NULL END AS dir, CASE WHEN q=1 THEN 'NE'WHEN q=2 THEN 'NW'WHEN q=3 THEN 'SW'WHEN q=4 THEN 'SE'ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE'WHEN qq=2 THEN 'NW'WHEN qq=3 THEN 'SW'WHEN qq=4 THEN 'SE'ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k as qqsec WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
           selectedFeatures.addData(data);
 
+          var cardinalDir = {
+            'N' : 'north',
+            'E': 'east',
+            'S' : 'south',
+            'W': "west",
+            'NW': 'northwest',
+            'NE': 'northeast',
+            'SE': 'southeast',
+            'SW': 'southwest'
+          };
+
           var properties = data.features[0].properties
           var dir = properties.dir.toString();
           var twp = properties.t.toString();
@@ -470,6 +491,9 @@
           var sec = properties.s.toString();
           var q   = properties.q_text.toString();
           var qq  = properties.qq_text.toString();
+          var qText = cardinalDir[q];
+          var qqText = cardinalDir[qq];
+          var dirText = cardinalDir[dir];
 
           var townshipStr = "Township: " + twp + "N";
           var rangeStr = "<br>Range: " + rng + dir;
@@ -482,6 +506,7 @@
           $('#section-within').html(sectionStr)
           $('#quarter-within').html(qSectionStr)
           $('#qq-within').html(qqSectionStr)
+
           $('.lat-long-output').html(latlng.lng.toPrecision(6) + `, ` + latlng.lat.toPrecision(6))
         });
       }
