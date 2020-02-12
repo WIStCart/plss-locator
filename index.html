@@ -106,6 +106,8 @@
             <span id="section-within"></span><span id="section-nearby"></span>
             <span id="quarter-within"></span><span id="quarter-nearby"></span>
             <span id="qq-within"></span><span id="qq-nearby"></span>
+            <br><br>
+            <div id="verbal-desc"></div>
           </p>
         </span>
       </div>
@@ -500,12 +502,15 @@
           var sectionStr =  "<br>Section: " + sec; 
           var qSectionStr =  "<br>Quarter Section: " + q;
           var qqSectionStr =  "<br>Quarter Quarter Section: " + qq;
+          var verbalDesc = "The " + qqText + " quarter of the " + qText + " quarter of Section " + sec + ", Township " + twp + " north, Range " + rng + " " + dirText + ", fourth Principal Meridian.";
+
 
           $('#township-within').html(townshipStr)
           $('#range-within').html(rangeStr)
           $('#section-within').html(sectionStr)
           $('#quarter-within').html(qSectionStr)
           $('#qq-within').html(qqSectionStr)
+          $('#verbal-desc').html(verbalDesc)
 
           $('.lat-long-output').html(latlng.lng.toPrecision(6) + `, ` + latlng.lat.toPrecision(6))
         });
