@@ -448,6 +448,7 @@
       }
 
       function selectFeatures(latlng) {
+
         selectedFeatures.clearLayers();
 
         $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM "sco-admin".scobase_wi_plss_townships_24k WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
@@ -487,16 +488,26 @@
 
       // Select features within a specified distance of the current location
       function selectNearbyFeatures(latlng){
+        
+        
 
         // Clear nearby numbers while query runs
-        $('#township-nearby').html("")
-        $('#range-nearby').html("")
-        $('#section-nearby').html("")
-        $('#quarter-nearby').html("")
-        $('#qq-nearby').html("")
+        // $('#township-nearby').html("")
+        // $('#range-nearby').html("")
+        // $('#section-nearby').html("")
+        // $('#quarter-nearby').html("")
+        // $('#qq-nearby').html("")
+
+        var ids = ['township-nearby','range-nearby','section-nearby','quarter-nearby','qq-nearby']
+        for (i=0; i<ids.length; i++) {
+          var node = document.getElementById(ids[i]);
+          while (node.firstChild) {
+            node.removeChild(node.firstChild);
+          }
+        }
 
         // Query quarter quarter sections to get nearby info
-        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT *, CASE WHEN d=2 THEN 'W'WHEN d=4 THEN 'E'ELSE NULL END AS dir, CASE WHEN q=1 THEN 'NE'WHEN q=2 THEN 'NW'WHEN q=3 THEN 'SW'WHEN q=4 THEN 'SE'ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE'WHEN qq=2 THEN 'NW'WHEN qq=3 THEN 'SW'WHEN qq=4 THEN 'SE'ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k AS qqsections WHERE ST_DWithin( ST_Transform(qqsections.the_geom, 3070), ST_Transform(ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326), 3070), 60 ) AND NOT ST_Contains( qqsections.the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
+        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT NULL AS the_geom, CASE WHEN d=2 THEN 'W' WHEN d=4 THEN 'E' ELSE NULL END AS dir, t, r, s, CASE WHEN q=1 THEN 'NE' WHEN q=2 THEN 'NW' WHEN q=3 THEN 'SW' WHEN q=4 THEN 'SE' ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE' WHEN qq=2 THEN 'NW' WHEN qq=3 THEN 'SW' WHEN qq=4 THEN 'SE' ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k AS qqsections WHERE ST_DWithin( ST_Transform(qqsections.the_geom, 3070), ST_Transform(ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326), 3070), 60 ) AND NOT ST_Contains( qqsections.the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
 
           // Exit function if there is nothing nearby
           if (data.features.length===0) { return }
@@ -539,21 +550,26 @@
 
           // Insert nearby info into html
           if (!nearby.twp.length == 0){
-            $('#township-nearby').html(' nearby ' + nearby.twp.join(', '));
+            var text = document.createTextNode(' nearby ' + nearby.twp.join(', '));
+            document.getElementById('township-nearby').appendChild(text);
           }
           if (!nearby.rng.length == 0){
-            $('#range-nearby').html(' nearby ' + nearby.rng.join(', '));
+            var text = document.createTextNode(' nearby ' + nearby.rng.join(', '));
+            document.getElementById('range-nearby').appendChild(text);
           }
           if (!nearby.sec.length == 0){
-            $('#section-nearby').html(' nearby ' + nearby.sec.join(', '));
+            var text = document.createTextNode(' nearby ' + nearby.sec.join(', '));
+            document.getElementById('section-nearby').appendChild(text);
           }
           if (!nearby.q.length == 0){
-            $('#quarter-nearby').html(' nearby ' + nearby.q.join(', '));
+            var text = document.createTextNode(' nearby ' + nearby.q.join(', '));
+            document.getElementById('quarter-nearby').appendChild(text);
           }
           if (!nearby.qq.length == 0){
-            $('#qq-nearby').html(' nearby ' + nearby.qq.join(', '));
+            var text = document.createTextNode(' nearby ' + nearby.qq.join(', '));
+            document.getElementById('qq-nearby').appendChild(text);
           }
-        }); 
+        });
       }
 
       // Get the township and section from latitude and longitude
