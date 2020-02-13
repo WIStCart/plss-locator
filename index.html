@@ -44,40 +44,99 @@
         height: 100%;
         width: 100%;
       }
-      #widgets {
-        z-index: 999;
-        border: solid #babac3 10px;
-        background:white;
-        padding:10px;
-        margin-top: 10px;
-      }
-      #widgets .output {
-        margin-bottom: 0;
-      }
-      #widgets-container .row {
-        margin-right: 10px;
-      }
       .searchControl-container {
         box-shadow: none;
-        width: 34px;
-        height: 34px;
+        /* width: 34px;
+        height: 34px; */
         border-radius: 3px;
         background: white;
-        border: 2px solid rgba(0,0,0,0.2);
+        border: 2px solid rgba(0, 0, 0, 0.253);
       }
       #searchText-div {
         fill: black;
+        width: 20px;
+        height: 30px;
         line-height: 30px;
       }
+
+      .wrapper {
+        display: flex;
+        align-items: stretch;
+        float: right;
+      }
+      #widget-button {
+        z-index: 998;
+        margin-top: 10px;
+        margin-right: 10px;
+        font-size: 20px;
+        cursor:pointer;
+        width: 34px;
+        height: 34px;
+        border-radius: 3px;
+        color:rgb(0, 0, 0);
+        background: white;
+        border: 2px solid rgba(0, 0, 0, 0.253);
+      }
+      .widget {
+        min-height: 50%;
+        height: auto;
+        width: 300px;
+        position: fixed;
+        z-index: 999;
+        top: 0;
+        right: 0;
+        padding-top: 10px;
+        border-radius: 3px;
+        background: white;
+        overflow-x: hidden;
+        /* transition: 0.5s; */ 
+      }
+      .widget a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: white;
+        display: block;
+      }
+      .widget .closebtn {
+        position: absolute;
+        top: -5px;
+        right: 10px;
+        font-size: 36px;
+        margin-left: 50px;
+        color: black;
+      }
+      #widget-content {
+        padding-left: 10px;
+      }
+      #get-device-location {
+        width: 225px;
+        color: white;
+        font-size: 20px;
+        border-radius: 5px;
+        padding: 2px;
+        border: 2px solid rgba(0, 0, 0, 0.5);
+        background-color: rgb(150, 150, 150);
+      }
+      @media screen and (max-width: 600px) {
+        .widget {width: 80%;}
+        .widget a {font-size: 18px;}
+        #get-device-location {width: 200px}
+      }
+
     </style>
   </head>
   <body>
     <div id="map"></div>
-    <div id="widgets-container">
-      <div class="row">
-        <div id="widgets" class="offset-lg-9 col-lg-3 offset-md-8 col-md-4 offset-sm-6 col-sm-6 offset-3 col-9">
-          <button id="get-device-location" class="col-12" onclick="getLocation()">Get Device Location</button>
-          <br><br>
+    <div id="widgets-container" class="wrapper">
+      <button id="widget-button" onclick="toggleWidget()">&#9776;</button>
+      <nav id="widget" class="widget">
+        <a href="javascript:void(0)" class="closebtn" onclick="toggleWidget()">&times;</a>
+        <div id="widget-content">
+          <div class="location-button">
+            <button id="get-device-location" onclick="getLocation()">Get Device Location</button>
+          </div>
+          <br>
           <div class="custom-control custom-switch">
             <input type="checkbox" class="custom-control-input" id="basemapToggle">
             <label class="custom-control-label" for="basemapToggle">Toggle Satellite</label>
@@ -87,7 +146,9 @@
           <h3>PLSS Info:</h3>
           <p class="output">-----</p>
         </div>
-      </div>
+        
+      </nav>
+      
     </div>
 
 
@@ -423,6 +484,7 @@
       map.on('click', function(e){
         addMarker(e.latlng);
         selectFeatures(e.latlng);
+        toggleWidget2();
       });
 
       function addMarker(latlng) {
@@ -489,6 +551,35 @@
       function get_twp_sec(latlng) {
         addMarker(latlng);
         selectFeatures(latlng);
+      }
+
+      // Toggle hide/display the Widget
+      function toggleWidget() {
+        
+        var screenSize = screen.width;
+        if (document.getElementById("widget").style.width === "0px") {
+          if (screen.width < "600") {
+            document.getElementById("widget").style.width = "80%";
+          }
+          else {
+            document.getElementById("widget").style.width = "300px";
+          }
+        }
+        else {
+          document.getElementById("widget").style.width = "0px";
+        }
+      }
+
+      // Display the Widget when map is clicked
+      function toggleWidget2() {
+        if (document.getElementById("widget").style.width === "0px") {
+          if (screen.width < "600") {
+            document.getElementById("widget").style.width = "80%";
+          }
+          else {
+            document.getElementById("widget").style.width = "300px";
+          }
+        }
       }
 
     </script>
