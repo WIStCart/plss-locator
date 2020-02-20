@@ -195,36 +195,73 @@
         FROM "sco-admin".scobase_wi_plss_qqsections_24k
       `);
 
-      const townshipsStyle = new carto.style.CartoCSS(`
+      //scale line width
+      function scaleWidth (startZoom, stopZoom, widthScaleFactor){
+        //scale factor, width, opacity, text variables
+        var width;
+        var scaleFactor;
+        var returnArray =[];
+        //width
+        for (startZoom; startZoom <= stopZoom; startZoom++){
+            scaleFactor = startZoom/widthScaleFactor;
+            width = scaleFactor;
+            returnArray.push(width);
+        }
+        return returnArray;
+      }
+
+      //scale opacity
+      function scaleOp(startZoom, stopZoom, opScaleFactor){
+        var opacity;
+        var scaleFactor;
+        var returnArray =[];
+        for (startZoom; startZoom <= stopZoom; startZoom++){
+          scaleFactor = startZoom/opScaleFactor;
+          opacity = scaleFactor;
+          returnArray.push(opacity);
+        }
+        if (startZoom > (stopZoom - 1)){
+              opacity = 0;
+              returnArray.push(opacity);
+        }
+        return returnArray;
+      }
+
+      //scale text-size
+      function scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor){
+        var txt;
+        var scaleFactor;
+        var returnArray =[];
+        if (startZoom < stopZoomLeft || startZoom > stopZoomRight) {
+            txt = 0;
+            returnArray.push(txt);
+        }
+        for (startZoom <= stopZoomLeft; startZoom <= stopZoomRight; startZoom++){
+                scaleFactor = startZoom + textScaleFactor;
+                txt = scaleFactor;
+                returnArray.push(txt);
+        }
+        return returnArray;
+      }
+
+      //string to store township style
+      var townshipsCSS = `
         #layer {
           polygon-fill: #162945;
           polygon-opacity: 0;
 
           ::outline {
-            line-width: 4;
-            line-color: #000;
-            line-opacity: 0.25;
-            
-            [zoom < 8] {
+            [zoom>7]{
+              line-color: #000; 
+            }
+            [zoom<7] {
               line-opacity: 0;
-            }
-            [zoom=8] {
-              line-opacity: 0.05;
-            }
-            [zoom=9]{
-              line-opacity: 0.1;
-            }
-            [zoom=10]{
-              line-opacity: 0.2;
-            }
-            [zoom>10]{
-              line-opacity: 0.25;
             }
           }
 
           ::labels {
-            [zoom>=11][zoom<13] {
-              text-size: 20;
+
+            [zoom>=11][zoom<=13] {
               text-name: 'TWP '+[twp]+' N\\nRNG '+[rng]+' '+[west_east];
               text-face-name: 'Lato Bold';
               text-fill: #465159;
@@ -237,16 +274,56 @@
             }
           }
         }
-      `);
+      `
+      //declare township zoom variables
+      var startZoom = 7;
+      var stopZoom = 18;
+      var stopZoomOp = 18;
+      var stopZoomLeft = 11;
+      var stopZoomRight = 13;
 
-      const sectionsStyle = new carto.style.CartoCSS(`
+      //declare township scale factor variables
+      var widthScaleFactor = 2;
+      var opScaleFactor = 50;
+      var textScaleFactor = 5; 
+      
+      //add zoom levels to township string
+      for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
+        var width = scaleWidth(startZoom, stopZoom, widthScaleFactor);
+        width = width[0];
+        var opacity = scaleOp(startZoom, stopZoomOp, opScaleFactor);
+        opacity = opacity[0];
+        var textSize = scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor);
+        textSize = textSize[0];
+
+        townshipsCSS +=  `
+          #layer {
+        
+            ::outline {
+              [zoom =`+ startZoom +`]{
+                line-width:` + width + `;
+                line-opacity:` + opacity + `;
+              }
+            }
+
+            ::labels { 
+              [zoom >= ` + stopZoomLeft + `][zoom = `+ startZoom +`][zoom<= ` + stopZoomRight + `] {
+                text-size:` + textSize + `;
+              }
+            }
+          }
+        `
+      }
+      
+      const townshipsStyle = new carto.style.CartoCSS(townshipsCSS);
+
+      //string to store section style
+      var sectionsCSS = `
         #layer {
           polygon-fill: #162945;
           polygon-opacity: 0;
           ::outline {
-            line-width: 2;
             line-color: #000; /* dcdfe3 */
-            line-opacity: 0.25;
 
             [zoom<13] {
               line-opacity: 0;
@@ -254,8 +331,7 @@
           }
           
           ::labels {
-            [zoom>=13] {
-              text-size: 20;
+            [zoom >= 13][zoom <= 16]{
               text-name: 'SEC\\n'+[sec];
               text-face-name: 'Lato Bold';
               text-fill: #465159;
@@ -266,27 +342,59 @@
               text-placement: point;
               text-placement-type: dummy;
             }
-            [zoom>=14] {
-              text-size: 36;
-            }
-            [zoom>=15] {
-              text-size: 52;
-            }
-            [zoom>=16] {
-              text-size: 72;
-            }
           }
         }
-      `);
+      `
+      //declare section zoom variables 
+      var startZoom = 13;
+      var stopZoom = 18;
+      var stopZoomOp = 16;
+      var stopZoomLeft = 13;
+      var stopZoomRight = 16;
 
-      const qsectionsStyle = new carto.style.CartoCSS(`
+      //declare section scale factor variables
+      var widthScaleFactor = 6;
+      var opScaleFactor = 60;
+      var textScaleFactor = 6;
+
+      //add zoom levels to section string
+      for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
+        var width = scaleWidth(startZoom, stopZoom, widthScaleFactor);
+        width = width[0];
+        var opacity = scaleOp(startZoom, stopZoomOp, opScaleFactor);
+        opacity = opacity[0];
+        var textSize = scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor);
+        textSize = textSize[0];
+
+        sectionsCSS += `
+          #layer {
+            
+            ::outline {
+
+              [zoom = `+ startZoom + `]{
+                line-width:` + width + `;
+                line-opacity:` + opacity + `;
+              }
+            }
+            
+            ::labels {
+              [zoom>=`+ stopZoomLeft +`][zoom = `+ startZoom +`][zoom<= `+ stopZoomRight +`]{
+                text-size: `+ textSize +`;
+              }
+            }
+          }
+        `
+      }
+     
+      const sectionsStyle = new carto.style.CartoCSS(sectionsCSS);
+
+      //string to store qSection style
+      var qSectionsCSS = `
         #layer {
           polygon-fill: #162945;
           polygon-opacity: 0;
           ::outline {
-            line-width: 1;
             line-color: #727d85;
-            line-opacity: 0.25;
 
             [zoom<14] {
               line-opacity: 0;
@@ -294,8 +402,7 @@
           }
           
           ::labels {
-            [zoom>=14] {
-              text-size: 20;
+            [zoom>=14][zoom <= 16] {
               text-name: '[q_text]';
               text-face-name: 'Lato Bold';
               text-fill: #727d85;
@@ -306,34 +413,70 @@
               text-placement: point;
               text-placement-type: dummy;
             }
-            [zoom>=15] {
-              text-size: 36;
-            }
-            [zoom>=16] {
-              text-size: 52;
-            }
           }
         }
-      `);
+      `
+      //declare qsection zoom variables 
+      var startZoom = 14;
+      var stopZoom = 18;
+      var stopZoomOp = 18;
+      var stopZoomLeft = 14;
+      var stopZoomRight = 16;
 
-      const qqsectionsStyle = new carto.style.CartoCSS(`
+      //declare qsection scale factor variables
+      var widthScaleFactor = 14;
+      var opScaleFactor = 60;
+      var textScaleFactor = 6;
+
+      //add zoom levels to qsection string
+      for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
+        var width = scaleWidth(startZoom, stopZoom, widthScaleFactor);
+        width = width[0];
+        var opacity = scaleOp(startZoom, stopZoomOp, opScaleFactor);
+        opacity = opacity[0];
+        var textSize = scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor);
+        textSize = textSize[0];
+
+        qSectionsCSS += `
+          #layer {
+
+            ::outline {
+
+              [zoom = `+ startZoom + `]{
+                line-width:` + width + `;
+                line-opacity:` + opacity + `;
+              }
+            }
+            
+            ::labels {
+              [zoom>=`+ stopZoomLeft +`][zoom = `+ startZoom +`][zoom<= `+ stopZoomRight +`]{
+                text-size: `+ textSize +`;
+              }
+            }
+          }
+        `
+      }
+
+      const qsectionsStyle = new carto.style.CartoCSS(qSectionsCSS);
+
+      //store qqsection style
+      var qqCSS = `
         #layer {
           polygon-fill: #162945;
           polygon-opacity: 0;
           ::outline {
-            line-width: 1;
             line-color: #99a2a8;
-            line-opacity: 0.25;
+            
             line-dasharray: 8,16;
 
-            [zoom<15] {
+            [zoom < 15]{
               line-opacity: 0;
             }
+
           }
           
           ::labels {
-            [zoom>=15] {
-              text-size: 20;
+            [zoom >= 15][zoom <= 18]{
               text-name: [qq_text];
               text-face-name: 'Lato Bold';
               text-fill: #99a2a8;
@@ -344,17 +487,50 @@
               text-placement: point;
               text-placement-type: dummy;
             }
-            [zoom>=17] {
-              text-size: 36;
-            }
-            [zoom>=19] {
-              text-size: 52;
-            }
           }
         }
-      `);
+      `
+      //declare qqsection zoom variables 
+      var startZoom = 15;
+      var stopZoom = 18;
+      var stopZoomOp = 16;
+      var stopZoomLeft = 15;
+      var stopZoomRight = 18;
 
+      //declare qqsection scale factor variables
+      var widthScaleFactor = 15;
+      var opScaleFactor = 60;
+      var textScaleFactor = 6;
 
+      //add zoom levels to qqsection string
+      for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
+        var width = scaleWidth(startZoom, stopZoom, widthScaleFactor);
+        width = width[0];
+        var opacity = scaleOp(startZoom, stopZoomOp, opScaleFactor);
+        opacity = opacity[0];
+        var textSize = scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor);
+        textSize = textSize[0];
+      
+        qqCSS += `
+          #layer {
+            
+            ::outline {
+          
+              [zoom = `+ startZoom + `]{
+                  line-width:` + width + `;
+                  line-opacity:` + opacity + `;
+                }
+            }
+            
+            ::labels {
+              [zoom >= `+ stopZoomLeft +`][zoom <= `+ stopZoomRight +`]{
+                text-size: `+ textSize + `;
+              }
+            }
+          }
+        `
+      }
+      const qqsectionsStyle = new carto.style.CartoCSS(qqCSS);
 
       const townships = new carto.layer.Layer(townshipsSource, townshipsStyle, {});
 
