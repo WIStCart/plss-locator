@@ -195,51 +195,24 @@
         FROM "sco-admin".scobase_wi_plss_qqsections_24k
       `);
 
-      //scale line width
-      function scaleWidth (startZoom, stopZoom, widthScaleFactor){
-        //scale factor, width, opacity, text variables
-        var width;
+      //scale line width, opacity and text size
+      function scaleLinework (startZoom, stopZoom, scaleFactor, stopZoomLeft, stopZoomRight){
         var scaleFactor;
-        var returnArray =[];
-        //width
+        var returnArray = [];
+        var linework;
         for (startZoom; startZoom <= stopZoom; startZoom++){
-            scaleFactor = startZoom/widthScaleFactor;
-            width = scaleFactor;
-            returnArray.push(width);
+            scaleFactor = startZoom/scaleFactor;
+            linework = scaleFactor;
+            returnArray.push(linework);
         }
-        return returnArray;
-      }
-
-      //scale opacity
-      function scaleOp(startZoom, stopZoom, opScaleFactor){
-        var opacity;
-        var scaleFactor;
-        var returnArray =[];
-        for (startZoom; startZoom <= stopZoom; startZoom++){
-          scaleFactor = startZoom/opScaleFactor;
-          opacity = scaleFactor;
-          returnArray.push(opacity);
-        }
-        if (startZoom > (stopZoom - 1)){
-              opacity = 0;
-              returnArray.push(opacity);
-        }
-        return returnArray;
-      }
-
-      //scale text-size
-      function scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor){
-        var txt;
-        var scaleFactor;
-        var returnArray =[];
         if (startZoom < stopZoomLeft || startZoom > stopZoomRight) {
-            txt = 0;
-            returnArray.push(txt);
+            linework = 0;
+            returnArray.push(linework);
         }
         for (startZoom <= stopZoomLeft; startZoom <= stopZoomRight; startZoom++){
-                scaleFactor = startZoom + textScaleFactor;
-                txt = scaleFactor;
-                returnArray.push(txt);
+                scaleFactor = startZoom + scaleFactor;
+                linework = scaleFactor;
+                returnArray.push(linework);
         }
         return returnArray;
       }
@@ -278,22 +251,14 @@
       //declare township zoom variables
       var startZoom = 7;
       var stopZoom = 18;
-      var stopZoomOp = 18;
-      var stopZoomLeft = 11;
-      var stopZoomRight = 13;
-
-      //declare township scale factor variables
-      var widthScaleFactor = 2;
-      var opScaleFactor = 50;
-      var textScaleFactor = 5; 
-      
+ 
       //add zoom levels to township string
       for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
-        var width = scaleWidth(startZoom, stopZoom, widthScaleFactor);
+        var width = scaleLinework(startZoom, 18, 2, 0, 0);
         width = width[0];
-        var opacity = scaleOp(startZoom, stopZoomOp, opScaleFactor);
+        var opacity = scaleLinework(startZoom, 18, 50, 0, 0);
         opacity = opacity[0];
-        var textSize = scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor);
+        var textSize = scaleLinework(startZoom, 0, 5, 11, 13);
         textSize = textSize[0];
 
         townshipsCSS +=  `
@@ -307,14 +272,13 @@
             }
 
             ::labels { 
-              [zoom >= ` + stopZoomLeft + `][zoom = `+ startZoom +`][zoom<= ` + stopZoomRight + `] {
+              [zoom >= 11][zoom = `+ startZoom +`][zoom<= 13] {
                 text-size:` + textSize + `;
               }
             }
           }
         `
       }
-      
       const townshipsStyle = new carto.style.CartoCSS(townshipsCSS);
 
       //string to store section style
@@ -348,22 +312,14 @@
       //declare section zoom variables 
       var startZoom = 13;
       var stopZoom = 18;
-      var stopZoomOp = 16;
-      var stopZoomLeft = 13;
-      var stopZoomRight = 16;
-
-      //declare section scale factor variables
-      var widthScaleFactor = 6;
-      var opScaleFactor = 60;
-      var textScaleFactor = 6;
-
+ 
       //add zoom levels to section string
       for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
-        var width = scaleWidth(startZoom, stopZoom, widthScaleFactor);
+        var width = scaleLinework(startZoom, 18, 6, 0, 0);
         width = width[0];
-        var opacity = scaleOp(startZoom, stopZoomOp, opScaleFactor);
+        var opacity = scaleLinework(startZoom, 16, 60, 0, 0);
         opacity = opacity[0];
-        var textSize = scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor);
+        var textSize = scaleLinework(startZoom, 0, 6, 13, 16);
         textSize = textSize[0];
 
         sectionsCSS += `
@@ -378,7 +334,7 @@
             }
             
             ::labels {
-              [zoom>=`+ stopZoomLeft +`][zoom = `+ startZoom +`][zoom<= `+ stopZoomRight +`]{
+              [zoom>=13][zoom = `+ startZoom +`][zoom<=16]{
                 text-size: `+ textSize +`;
               }
             }
@@ -419,22 +375,14 @@
       //declare qsection zoom variables 
       var startZoom = 14;
       var stopZoom = 18;
-      var stopZoomOp = 18;
-      var stopZoomLeft = 14;
-      var stopZoomRight = 16;
-
-      //declare qsection scale factor variables
-      var widthScaleFactor = 14;
-      var opScaleFactor = 60;
-      var textScaleFactor = 6;
 
       //add zoom levels to qsection string
       for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
-        var width = scaleWidth(startZoom, stopZoom, widthScaleFactor);
+        var width = scaleLinework(startZoom, 18, 14, 0, 0);
         width = width[0];
-        var opacity = scaleOp(startZoom, stopZoomOp, opScaleFactor);
+        var opacity = scaleLinework(startZoom, 18, 60, 0, 0);
         opacity = opacity[0];
-        var textSize = scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor);
+        var textSize = scaleLinework(startZoom, 0, 6, 14, 16);
         textSize = textSize[0];
 
         qSectionsCSS += `
@@ -449,7 +397,7 @@
             }
             
             ::labels {
-              [zoom>=`+ stopZoomLeft +`][zoom = `+ startZoom +`][zoom<= `+ stopZoomRight +`]{
+              [zoom>=14][zoom = `+ startZoom +`][zoom<=16]{
                 text-size: `+ textSize +`;
               }
             }
@@ -493,22 +441,14 @@
       //declare qqsection zoom variables 
       var startZoom = 15;
       var stopZoom = 18;
-      var stopZoomOp = 16;
-      var stopZoomLeft = 15;
-      var stopZoomRight = 18;
-
-      //declare qqsection scale factor variables
-      var widthScaleFactor = 15;
-      var opScaleFactor = 60;
-      var textScaleFactor = 6;
-
+ 
       //add zoom levels to qqsection string
       for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
-        var width = scaleWidth(startZoom, stopZoom, widthScaleFactor);
+        var width = scaleLinework(startZoom, 18, 15, 0, 0);
         width = width[0];
-        var opacity = scaleOp(startZoom, stopZoomOp, opScaleFactor);
+        var opacity = scaleLinework(startZoom, 17, 60, 0, 0);
         opacity = opacity[0];
-        var textSize = scaleTxt(startZoom, stopZoomLeft, stopZoomRight, textScaleFactor);
+        var textSize = scaleLinework(startZoom, 0, 6, 15, 18);
         textSize = textSize[0];
       
         qqCSS += `
@@ -523,7 +463,7 @@
             }
             
             ::labels {
-              [zoom >= `+ stopZoomLeft +`][zoom <= `+ stopZoomRight +`]{
+              [zoom >= 15][zoom <= 18]{
                 text-size: `+ textSize + `;
               }
             }
