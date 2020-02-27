@@ -63,7 +63,6 @@
         border: 2px solid rgba(0, 0, 0, 0.253);
       }
       .widget {
-        min-height: 50%;
         height: auto;
         width: 300px;
         position: fixed;
@@ -97,29 +96,9 @@
       #widget-content .output {
         margin-bottom: 0;
       }
-      #widget-content #township-nearby {
+      #township-nearby, #range-nearby, #section-nearby, #quarter-nearby, #qq-nearby {
         font-style: italic;
-      }
-      #widget-content #range-nearby {
-        font-style: italic;
-      }
-      #widget-content #section-nearby {
-        font-style: italic;
-      }
-      #widget-content #quarter-nearby {
-        font-style: italic;
-      }
-      #widget-content #qq-nearby {
-        font-style: italic;
-      }
-      #get-device-location {
-        width: 225px;
-        color: white;
-        font-size: 20px;
-        border-radius: 5px;
-        padding: 2px;
-        border: 2px solid rgba(0, 0, 0, 0.5);
-        background-color: rgb(150, 150, 150);
+        font-size: 0.75em;
       }
       @media screen and (max-width: 600px) {
         .widget {width: 80%;}
@@ -137,7 +116,7 @@
         <a class="closebtn" onclick="toggleWidget()">&times;</a>
         <div id="widget-content">
           <div class="location-button">
-            <button id="get-device-location" onclick="getLocation()">Get Device Location</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="getLocation()">Get Device Location</button>
           </div>
           <br>
           <div class="custom-control custom-switch">
