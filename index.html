@@ -142,7 +142,9 @@
 
     <script>
       // Set initial map view
-      const map = L.map('map').setView([45,-90], 7);
+      const map = L.map('map',{
+        maxZoom: 18,
+      }).setView([45,-90], 7);
       map.createPane("backgroundPane").style.zIndex = 100;
       map.createPane("foregroundPane").style.zIndex = 200;
       
@@ -198,7 +200,7 @@
         });
       });
 
-      // Prep townships
+      // Prepare layer sources
       const townshipsSource = new carto.source.SQL(`
         SELECT *, 
         CASE
@@ -247,36 +249,36 @@
         FROM "sco-admin".scobase_wi_plss_qqsections_24k
       `);
 
-      const townshipsStyle = new carto.style.CartoCSS(`
+      // Utility to dynamically generate syling for layer and labels at different zoom levels
+      function scaleMapElements(zoomStart, zoomEnd, scaleFactor, scaleInitial, styleString) {
+        
+        var zoomCSS = '';
+        
+        // Iterate through zoom level index
+        for (i = 0; i < zoomEnd - zoomStart; i++){
+          zoomCSS += '[zoom = ' + (zoomStart + i) + ']{' + styleString + ':' + (Math.pow(i, 2)*scaleFactor + scaleInitial) + ';}'
+        }
+
+        return zoomCSS
+      }
+
+      // Township style
+      var townshipsCSS = `
         #layer {
           polygon-fill: #162945;
           polygon-opacity: 0;
 
           ::outline {
-            line-width: 4;
-            line-color: #000;
-            line-opacity: 0.25;
-            
-            [zoom < 8] {
+            [zoom>7]{
               line-opacity: 0;
-            }
-            [zoom=8] {
-              line-opacity: 0.05;
-            }
-            [zoom=9]{
-              line-opacity: 0.1;
-            }
-            [zoom=10]{
-              line-opacity: 0.2;
-            }
-            [zoom>10]{
-              line-opacity: 0.25;
-            }
-          }
+            }` +
+            scaleMapElements(8, 19, 0.8, 1.5, 'line-width') +
+            scaleMapElements(8, 17, .01, 0.2, 'line-opacity') +
+          `}
 
           ::labels {
-            [zoom>=11][zoom<13] {
-              text-size: 20;
+
+            [zoom>=11][zoom<=12] {
               text-name: 'TWP '+[twp]+' N\\nRNG '+[rng]+' '+[west_east];
               text-face-name: 'Lato Bold';
               text-fill: #465159;
@@ -286,28 +288,31 @@
               text-allow-overlap: true;
               text-placement: point;
               text-placement-type: dummy;
-            }
-          }
+            }` +
+            scaleMapElements(11, 13, 10, 20, 'text-size') +
+            scaleMapElements(11, 13, 0.1, 0.9, 'text-opacity') +
+          `}
         }
-      `);
+      `
+      const townshipsStyle = new carto.style.CartoCSS(townshipsCSS);
 
-      const sectionsStyle = new carto.style.CartoCSS(`
+      // Section style
+      var sectionsCSS = `
         #layer {
           polygon-fill: #162945;
           polygon-opacity: 0;
           ::outline {
-            line-width: 2;
             line-color: #000; /* dcdfe3 */
-            line-opacity: 0.25;
 
             [zoom<13] {
               line-opacity: 0;
-            }
-          }
+            }` +
+            scaleMapElements(13, 19, 1.1, 1, 'line-width') +
+            scaleMapElements(13, 19, 0.02, 0.5, 'line-opacity') +
+          `}
           
           ::labels {
-            [zoom>=13] {
-              text-size: 20;
+            [zoom >= 13][zoom <= 16]{
               text-name: 'SEC\\n'+[sec];
               text-face-name: 'Lato Bold';
               text-fill: #465159;
@@ -317,37 +322,31 @@
               text-allow-overlap: true;
               text-placement: point;
               text-placement-type: dummy;
-            }
-            [zoom>=14] {
-              text-size: 36;
-            }
-            [zoom>=15] {
-              text-size: 52;
-            }
-            [zoom>=16] {
-              text-size: 72;
-            }
-          }
+            }` +
+            scaleMapElements(13, 17, 9, 18, 'text-size') +
+            scaleMapElements(13, 17, 0.01, 0.85, 'text-opacity') +
+          `}
         }
-      `);
+      `
+      const sectionsStyle = new carto.style.CartoCSS(sectionsCSS);
 
-      const qsectionsStyle = new carto.style.CartoCSS(`
+      // Quarter section style
+      var qSectionsCSS = `
         #layer {
           polygon-fill: #162945;
           polygon-opacity: 0;
           ::outline {
-            line-width: 1;
             line-color: #727d85;
-            line-opacity: 0.25;
 
             [zoom<14] {
               line-opacity: 0;
-            }
-          }
+            }` +
+            scaleMapElements(14, 19, 1.1, 1, 'line-width') +
+            scaleMapElements(14, 19, 0.02, 0.3, 'line-opacity') +
+          `}
           
           ::labels {
-            [zoom>=14] {
-              text-size: 20;
+            [zoom>=14][zoom <= 16] {
               text-name: '[q_text]';
               text-face-name: 'Lato Bold';
               text-fill: #727d85;
@@ -357,35 +356,33 @@
               text-allow-overlap: true;
               text-placement: point;
               text-placement-type: dummy;
-            }
-            [zoom>=15] {
-              text-size: 36;
-            }
-            [zoom>=16] {
-              text-size: 52;
-            }
-          }
+            }` +
+            scaleMapElements(14, 17, 10, 20, 'text-size') +
+            scaleMapElements(14, 17, 0.02, 0.85, 'text-opacity') +
+          `}
         }
-      `);
+      `
+      const qsectionsStyle = new carto.style.CartoCSS(qSectionsCSS);
 
-      const qqsectionsStyle = new carto.style.CartoCSS(`
+      // Quarter-quarter section style
+      var qqSectionsCSS = `
         #layer {
           polygon-fill: #162945;
           polygon-opacity: 0;
           ::outline {
-            line-width: 1;
             line-color: #99a2a8;
-            line-opacity: 0.25;
+            
             line-dasharray: 8,16;
 
-            [zoom<15] {
+            [zoom < 15]{
               line-opacity: 0;
-            }
-          }
+            }` +
+            scaleMapElements(15, 19, 1.1, 1, 'line-width') +
+            scaleMapElements(15, 19, 0.02, 0.15, 'line-opacity') +
+          `}
           
           ::labels {
-            [zoom>=15] {
-              text-size: 20;
+            [zoom >= 15][zoom <= 18]{
               text-name: [qq_text];
               text-face-name: 'Lato Bold';
               text-fill: #99a2a8;
@@ -395,50 +392,33 @@
               text-allow-overlap: true;
               text-placement: point;
               text-placement-type: dummy;
-            }
-            [zoom>=17] {
-              text-size: 36;
-            }
-            [zoom>=19] {
-              text-size: 52;
-            }
-          }
+            }` +
+            scaleMapElements(15, 19, 10, 20, 'text-size') +
+            scaleMapElements(15, 19, 0.015, 0.85, 'text-opacity') +
+          `}
         }
-      `);
+      `
+      const qqsectionsStyle = new carto.style.CartoCSS(qqSectionsCSS);
 
-
-
+      // Create layers
       const townships = new carto.layer.Layer(townshipsSource, townshipsStyle, {});
-
       const sections = new carto.layer.Layer(sectionsSource, sectionsStyle, {});
-
       const qsections = new carto.layer.Layer(qsectionsSource, qsectionsStyle, {});
-
       const qqsections = new carto.layer.Layer(qqsectionsSource, qqsectionsStyle, {});
 
-      // Add qqsections layer
+      // Add layers
       client.addLayers([qqsections],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add qsections layer
       client.addLayers([qsections],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add sections layer
       client.addLayers([sections],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add townships layer
       client.addLayers([townships],{pane:'foregroundPane'});
       client.getLeafletLayer().addTo(map);
 
-      // Add empty layer to add selected features into
+      // Add empty layer in to which selected features will be added
       var selectedStyle = {
         "color": "#e8b756",
         "fillOpacity": 0.1,
         "weight": 4,
         "opacity": 0.75
-        
       };
       var selectedFeatures = L.geoJson(null,{style: selectedStyle}).addTo(map);
 
@@ -552,12 +532,6 @@
         
 
         // Clear nearby numbers while query runs
-        // $('#township-nearby').html("")
-        // $('#range-nearby').html("")
-        // $('#section-nearby').html("")
-        // $('#quarter-nearby').html("")
-        // $('#qq-nearby').html("")
-
         var ids = ['township-nearby','range-nearby','section-nearby','quarter-nearby','qq-nearby']
         for (i=0; i<ids.length; i++) {
           var node = document.getElementById(ids[i]);
