@@ -24,7 +24,7 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <!-- Leaflet Search Control -->
-    <link rel="stylesheet" href="https://maps.sco.wisc.edu/searchControl/searchControl.css">
+    <link rel="stylesheet" href="../leaflet-search-control/leaflet-search-control.css">
     
     <!-- Include Leaflet -->
     <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
@@ -33,8 +33,8 @@
     <!-- Needed for the Search Control -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://maps.sco.wisc.edu/searchControl/searchControl.js"></script>
-    
+    <script type="text/javascript" src="../leaflet-search-control/leaflet-search-control.js"></script>
+
     <style>
       * { margin:0; padding:0; }
       html { box-sizing:border-box; height:100%; }
@@ -44,40 +44,81 @@
         height: 100%;
         width: 100%;
       }
-      #widgets {
-        z-index: 999;
-        border: solid #babac3 10px;
-        background:white;
-        padding:10px;
+      .wrapper {
+        display: flex;
+        align-items: stretch;
+        float: right;
+      }
+      #widget-button {
+        z-index: 998;
         margin-top: 10px;
-      }
-      #widgets .output {
-        margin-bottom: 0;
-      }
-      #widgets-container .row {
         margin-right: 10px;
-      }
-      .searchControl-container {
-        box-shadow: none;
+        font-size: 20px;
+        cursor:pointer;
         width: 34px;
         height: 34px;
         border-radius: 3px;
+        color:rgb(0, 0, 0);
         background: white;
-        border: 2px solid rgba(0,0,0,0.2);
+        border: 2px solid rgba(0, 0, 0, 0.253);
       }
-      #searchText-div {
-        fill: black;
-        line-height: 30px;
+      .widget {
+        height: auto;
+        width: 300px;
+        position: fixed;
+        z-index: 999;
+        top: 0;
+        right: 0;
+        padding-top: 10px;
+        border-radius: 3px;
+        background: white;
+        overflow-x: hidden;
+        /* transition: 0.5s; */ 
       }
+      .widget a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: white;
+        display: block;
+      }
+      .widget .closebtn {
+        position: absolute;
+        top: -5px;
+        right: 10px;
+        font-size: 36px;
+        margin-left: 50px;
+        color: black;
+      }
+      #widget-content {
+        padding-left: 10px;
+      }
+      #widget-content .output {
+        margin-bottom: 0;
+      }
+      #township-nearby, #range-nearby, #section-nearby, #quarter-nearby, #qq-nearby {
+        font-style: italic;
+        font-size: 0.75em;
+      }
+      @media screen and (max-width: 600px) {
+        .widget {width: 80%;}
+        .widget a {font-size: 18px;}
+        #get-device-location {width: 200px}
+      }
+
     </style>
   </head>
   <body>
     <div id="map"></div>
-    <div id="widgets-container">
-      <div class="row">
-        <div id="widgets" class="offset-lg-9 col-lg-3 offset-md-8 col-md-4 offset-sm-6 col-sm-6 offset-3 col-9">
-          <button id="get-device-location" class="col-12" onclick="getLocation()">Get Device Location</button>
-          <br><br>
+    <div id="widgets-container" class="wrapper">
+      <button id="widget-button" onclick="toggleWidget()">&#9776;</button>
+      <nav id="widget" class="widget">
+        <a class="closebtn" onclick="toggleWidget()">&times;</a>
+        <div id="widget-content">
+          <div class="location-button">
+            <button type="button" class="btn btn-outline-secondary" onclick="getLocation()">Get Device Location</button>
+          </div>
+          <br>
           <div class="custom-control custom-switch">
             <input type="checkbox" class="custom-control-input" id="basemapToggle">
             <label class="custom-control-label" for="basemapToggle">Toggle Satellite</label>
@@ -85,8 +126,16 @@
           <br>
           <p>Lat/Long: <span class="lat-long-output"></span></p>
           <h3>PLSS Info:</h3>
-          <p class="output">-----</p>
-        </div>
+          <p class ="output">
+            <span id="township-within">------</span><span id="township-nearby"></span>
+            <span id="range-within"></span><span id="range-nearby"></span>
+            <span id="section-within"></span><span id="section-nearby"></span>
+            <span id="quarter-within"></span><span id="quarter-nearby"></span>
+            <span id="qq-within"></span><span id="qq-nearby"></span>
+            <br><br>
+            <div id="verbal-desc"></div>
+          </p>
+        </span>
       </div>
     </div>
 
@@ -101,8 +150,10 @@
       // Set initial map view
       const map = L.map('map',{
         minZoom: 7,
-        maxBounds: bounds,
+        maxZoom: 18,
+        maxBounds: bounds
       }).setView([45,-90], 7);
+      
       map.createPane("backgroundPane").style.zIndex = 100;
       map.createPane("foregroundPane").style.zIndex = 200;
       
@@ -131,9 +182,12 @@
         twnRng: false,
         twnRngSec: false,
         quad: false,
+        theme: 'grey-leaflet',
         position: 'topleft',
+        mobilePosition: 'raisedbottomright',
         order: ["latLng", "address", "gazetteer", "county", "cityTownVillage"],
-        searchText: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8"> <path d="M3.5 0c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5c.59 0 1.17-.14 1.66-.41a1 1 0 0 0 .13.13l1 1a1.02 1.02 0 1 0 1.44-1.44l-1-1a1 1 0 0 0-.16-.13c.27-.49.44-1.06.44-1.66 0-1.93-1.57-3.5-3.5-3.5zm0 1c1.39 0 2.5 1.11 2.5 2.5 0 .66-.24 1.27-.66 1.72-.01.01-.02.02-.03.03a1 1 0 0 0-.13.13c-.44.4-1.04.63-1.69.63-1.39 0-2.5-1.11-2.5-2.5s1.11-2.5 2.5-2.5z"/> </svg>'
+        searchText: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8"> <path d="M3.5 0c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5c.59 0 1.17-.14 1.66-.41a1 1 0 0 0 .13.13l1 1a1.02 1.02 0 1 0 1.44-1.44l-1-1a1 1 0 0 0-.16-.13c.27-.49.44-1.06.44-1.66 0-1.93-1.57-3.5-3.5-3.5zm0 1c1.39 0 2.5 1.11 2.5 2.5 0 .66-.24 1.27-.66 1.72-.01.01-.02.02-.03.03a1 1 0 0 0-.13.13c-.44.4-1.04.63-1.69.63-1.39 0-2.5-1.11-2.5-2.5s1.11-2.5 2.5-2.5z"/> </svg>',
+        mobileSearchText: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8"> <path d="M3.5 0c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5c.59 0 1.17-.14 1.66-.41a1 1 0 0 0 .13.13l1 1a1.02 1.02 0 1 0 1.44-1.44l-1-1a1 1 0 0 0-.16-.13c.27-.49.44-1.06.44-1.66 0-1.93-1.57-3.5-3.5-3.5zm0 1c1.39 0 2.5 1.11 2.5 2.5 0 .66-.24 1.27-.66 1.72-.01.01-.02.02-.03.03a1 1 0 0 0-.13.13c-.44.4-1.04.63-1.69.63-1.39 0-2.5-1.11-2.5-2.5s1.11-2.5 2.5-2.5z"/> </svg>'
       });
 
       // Init client
@@ -155,7 +209,7 @@
         });
       });
 
-      // Prep townships
+      // Prepare layer sources
       const townshipsSource = new carto.source.SQL(`
         SELECT *, 
         CASE
@@ -204,29 +258,20 @@
         FROM "sco-admin".scobase_wi_plss_qqsections_24k
       `);
 
-      //scale line width, opacity and text size
-      function scaleLinework (startZoom, stopZoom, scaleFactor, stopZoomLeft, stopZoomRight){
-        var scaleFactor;
-        var returnArray = [];
-        var linework;
-        for (startZoom; startZoom <= stopZoom; startZoom++){
-            scaleFactor = startZoom/scaleFactor;
-            linework = scaleFactor;
-            returnArray.push(linework);
+      // Utility to dynamically generate syling for layer and labels at different zoom levels
+      function scaleMapElements(zoomStart, zoomEnd, scaleFactor, scaleInitial, styleString) {
+        
+        var zoomCSS = '';
+        
+        // Iterate through zoom level index
+        for (i = 0; i < zoomEnd - zoomStart; i++){
+          zoomCSS += '[zoom = ' + (zoomStart + i) + ']{' + styleString + ':' + (Math.pow(i, 2)*scaleFactor + scaleInitial) + ';}'
         }
-        if (startZoom < stopZoomLeft || startZoom > stopZoomRight) {
-            linework = 0;
-            returnArray.push(linework);
-        }
-        for (startZoom <= stopZoomLeft; startZoom <= stopZoomRight; startZoom++){
-                scaleFactor = startZoom + scaleFactor;
-                linework = scaleFactor;
-                returnArray.push(linework);
-        }
-        return returnArray;
+
+        return zoomCSS
       }
 
-      //string to store township style
+      // Township style
       var townshipsCSS = `
         #layer {
           polygon-fill: #162945;
@@ -234,16 +279,15 @@
 
           ::outline {
             [zoom>7]{
-              line-color: #000; 
-            }
-            [zoom<7] {
               line-opacity: 0;
-            }
-          }
+            }` +
+            scaleMapElements(8, 19, 0.8, 1.5, 'line-width') +
+            scaleMapElements(8, 17, .01, 0.2, 'line-opacity') +
+          `}
 
           ::labels {
 
-            [zoom>=11][zoom<=13] {
+            [zoom>=11][zoom<=12] {
               text-name: 'TWP '+[twp]+' N\\nRNG '+[rng]+' '+[west_east];
               text-face-name: 'Lato Bold';
               text-fill: #465159;
@@ -253,44 +297,15 @@
               text-allow-overlap: true;
               text-placement: point;
               text-placement-type: dummy;
-            }
-          }
+            }` +
+            scaleMapElements(11, 13, 10, 20, 'text-size') +
+            scaleMapElements(11, 13, 0.1, 0.9, 'text-opacity') +
+          `}
         }
       `
-      //declare township zoom variables
-      var startZoom = 7;
-      var stopZoom = 18;
- 
-      //add zoom levels to township string
-      for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
-        var width = scaleLinework(startZoom, 18, 2, 0, 0);
-        width = width[0];
-        var opacity = scaleLinework(startZoom, 18, 50, 0, 0);
-        opacity = opacity[0];
-        var textSize = scaleLinework(startZoom, 0, 5, 11, 13);
-        textSize = textSize[0];
-
-        townshipsCSS +=  `
-          #layer {
-        
-            ::outline {
-              [zoom =`+ startZoom +`]{
-                line-width:` + width + `;
-                line-opacity:` + opacity + `;
-              }
-            }
-
-            ::labels { 
-              [zoom >= 11][zoom = `+ startZoom +`][zoom<= 13] {
-                text-size:` + textSize + `;
-              }
-            }
-          }
-        `
-      }
       const townshipsStyle = new carto.style.CartoCSS(townshipsCSS);
 
-      //string to store section style
+      // Section style
       var sectionsCSS = `
         #layer {
           polygon-fill: #162945;
@@ -300,8 +315,10 @@
 
             [zoom<13] {
               line-opacity: 0;
-            }
-          }
+            }` +
+            scaleMapElements(13, 19, 1.1, 1, 'line-width') +
+            scaleMapElements(13, 19, 0.02, 0.5, 'line-opacity') +
+          `}
           
           ::labels {
             [zoom >= 13][zoom <= 16]{
@@ -314,46 +331,15 @@
               text-allow-overlap: true;
               text-placement: point;
               text-placement-type: dummy;
-            }
-          }
+            }` +
+            scaleMapElements(13, 17, 9, 18, 'text-size') +
+            scaleMapElements(13, 17, 0.01, 0.85, 'text-opacity') +
+          `}
         }
       `
-      //declare section zoom variables 
-      var startZoom = 13;
-      var stopZoom = 18;
- 
-      //add zoom levels to section string
-      for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
-        var width = scaleLinework(startZoom, 18, 6, 0, 0);
-        width = width[0];
-        var opacity = scaleLinework(startZoom, 16, 60, 0, 0);
-        opacity = opacity[0];
-        var textSize = scaleLinework(startZoom, 0, 6, 13, 16);
-        textSize = textSize[0];
-
-        sectionsCSS += `
-          #layer {
-            
-            ::outline {
-
-              [zoom = `+ startZoom + `]{
-                line-width:` + width + `;
-                line-opacity:` + opacity + `;
-              }
-            }
-            
-            ::labels {
-              [zoom>=13][zoom = `+ startZoom +`][zoom<=16]{
-                text-size: `+ textSize +`;
-              }
-            }
-          }
-        `
-      }
-     
       const sectionsStyle = new carto.style.CartoCSS(sectionsCSS);
 
-      //string to store qSection style
+      // Quarter section style
       var qSectionsCSS = `
         #layer {
           polygon-fill: #162945;
@@ -363,8 +349,10 @@
 
             [zoom<14] {
               line-opacity: 0;
-            }
-          }
+            }` +
+            scaleMapElements(14, 19, 1.1, 1, 'line-width') +
+            scaleMapElements(14, 19, 0.02, 0.3, 'line-opacity') +
+          `}
           
           ::labels {
             [zoom>=14][zoom <= 16] {
@@ -377,47 +365,16 @@
               text-allow-overlap: true;
               text-placement: point;
               text-placement-type: dummy;
-            }
-          }
+            }` +
+            scaleMapElements(14, 17, 10, 20, 'text-size') +
+            scaleMapElements(14, 17, 0.02, 0.85, 'text-opacity') +
+          `}
         }
       `
-      //declare qsection zoom variables 
-      var startZoom = 14;
-      var stopZoom = 18;
-
-      //add zoom levels to qsection string
-      for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
-        var width = scaleLinework(startZoom, 18, 14, 0, 0);
-        width = width[0];
-        var opacity = scaleLinework(startZoom, 18, 60, 0, 0);
-        opacity = opacity[0];
-        var textSize = scaleLinework(startZoom, 0, 6, 14, 16);
-        textSize = textSize[0];
-
-        qSectionsCSS += `
-          #layer {
-
-            ::outline {
-
-              [zoom = `+ startZoom + `]{
-                line-width:` + width + `;
-                line-opacity:` + opacity + `;
-              }
-            }
-            
-            ::labels {
-              [zoom>=14][zoom = `+ startZoom +`][zoom<=16]{
-                text-size: `+ textSize +`;
-              }
-            }
-          }
-        `
-      }
-
       const qsectionsStyle = new carto.style.CartoCSS(qSectionsCSS);
 
-      //store qqsection style
-      var qqCSS = `
+      // Quarter-quarter section style
+      var qqSectionsCSS = `
         #layer {
           polygon-fill: #162945;
           polygon-opacity: 0;
@@ -428,9 +385,10 @@
 
             [zoom < 15]{
               line-opacity: 0;
-            }
-
-          }
+            }` +
+            scaleMapElements(15, 19, 1.1, 1, 'line-width') +
+            scaleMapElements(15, 19, 0.02, 0.15, 'line-opacity') +
+          `}
           
           ::labels {
             [zoom >= 15][zoom <= 18]{
@@ -443,75 +401,33 @@
               text-allow-overlap: true;
               text-placement: point;
               text-placement-type: dummy;
-            }
-          }
+            }` +
+            scaleMapElements(15, 19, 10, 20, 'text-size') +
+            scaleMapElements(15, 19, 0.015, 0.85, 'text-opacity') +
+          `}
         }
       `
-      //declare qqsection zoom variables 
-      var startZoom = 15;
-      var stopZoom = 18;
- 
-      //add zoom levels to qqsection string
-      for (startZoom >= 7; startZoom <=stopZoom; startZoom ++){
-        var width = scaleLinework(startZoom, 18, 15, 0, 0);
-        width = width[0];
-        var opacity = scaleLinework(startZoom, 17, 60, 0, 0);
-        opacity = opacity[0];
-        var textSize = scaleLinework(startZoom, 0, 6, 15, 18);
-        textSize = textSize[0];
-      
-        qqCSS += `
-          #layer {
-            
-            ::outline {
-          
-              [zoom = `+ startZoom + `]{
-                  line-width:` + width + `;
-                  line-opacity:` + opacity + `;
-                }
-            }
-            
-            ::labels {
-              [zoom >= 15][zoom <= 18]{
-                text-size: `+ textSize + `;
-              }
-            }
-          }
-        `
-      }
-      const qqsectionsStyle = new carto.style.CartoCSS(qqCSS);
+      const qqsectionsStyle = new carto.style.CartoCSS(qqSectionsCSS);
 
+      // Create layers
       const townships = new carto.layer.Layer(townshipsSource, townshipsStyle, {});
-
       const sections = new carto.layer.Layer(sectionsSource, sectionsStyle, {});
-
       const qsections = new carto.layer.Layer(qsectionsSource, qsectionsStyle, {});
-
       const qqsections = new carto.layer.Layer(qqsectionsSource, qqsectionsStyle, {});
 
-      // Add qqsections layer
+      // Add layers
       client.addLayers([qqsections],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add qsections layer
       client.addLayers([qsections],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add sections layer
       client.addLayers([sections],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add townships layer
       client.addLayers([townships],{pane:'foregroundPane'});
       client.getLeafletLayer().addTo(map);
 
-      // Add empty layer to add selected features into
+      // Add empty layer in to which selected features will be added
       var selectedStyle = {
         "color": "#e8b756",
         "fillOpacity": 0.1,
         "weight": 4,
         "opacity": 0.75
-        
       };
       var selectedFeatures = L.geoJson(null,{style: selectedStyle}).addTo(map);
 
@@ -548,6 +464,8 @@
       map.on('click', function(e){
         addMarker(e.latlng);
         selectFeatures(e.latlng);
+        toggleWidget2();
+        selectNearbyFeatures(e.latlng);
       });
 
       function addMarker(latlng) {
@@ -561,6 +479,7 @@
       }
 
       function selectFeatures(latlng) {
+
         selectedFeatures.clearLayers();
 
         $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM "sco-admin".scobase_wi_plss_townships_24k WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
@@ -597,16 +516,102 @@
           var qqText = cardinalDir[qq];
           var dirText = cardinalDir[dir];
 
-          var infoString = "Township: " + twp + "N" + 
-            "<br>Range: " + rng + dir + 
-            "<br>Section: " + sec + 
-            "<br>Quarter Section: " + q +
-            "<br>Quarter Quarter Section: " + qq +
-            "<br>" + 
-            "<br>The " + qqText + " quarter of the " + qText + " quarter of Section " + sec + ", Township " + twp + " north, Range " + rng + " " + dirText + ", fourth Principal Meridian.";
+          var townshipStr = "Township: " + twp + "N";
+          var rangeStr = "<br>Range: " + rng + dir;
+          var sectionStr =  "<br>Section: " + sec; 
+          var qSectionStr =  "<br>Quarter Section: " + q;
+          var qqSectionStr =  "<br>Quarter Quarter Section: " + qq;
+          var verbalDesc = "The " + qqText + " quarter of the " + qText + " quarter of Section " + sec + ", Township " + twp + " north, Range " + rng + " " + dirText + ", fourth Principal Meridian.";
 
-          $('.output').html(infoString)
+
+          $('#township-within').html(townshipStr)
+          $('#range-within').html(rangeStr)
+          $('#section-within').html(sectionStr)
+          $('#quarter-within').html(qSectionStr)
+          $('#qq-within').html(qqSectionStr)
+          $('#verbal-desc').html(verbalDesc)
+
           $('.lat-long-output').html(latlng.lng.toPrecision(6) + `, ` + latlng.lat.toPrecision(6))
+        });
+      }
+
+      // Select features within a specified distance of the current location
+      function selectNearbyFeatures(latlng){
+        
+        
+
+        // Clear nearby numbers while query runs
+        var ids = ['township-nearby','range-nearby','section-nearby','quarter-nearby','qq-nearby']
+        for (i=0; i<ids.length; i++) {
+          var node = document.getElementById(ids[i]);
+          while (node.firstChild) {
+            node.removeChild(node.firstChild);
+          }
+        }
+
+        // Query quarter quarter sections to get nearby info
+        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT NULL AS the_geom, CASE WHEN d=2 THEN 'W' WHEN d=4 THEN 'E' ELSE NULL END AS dir, t, r, s, CASE WHEN q=1 THEN 'NE' WHEN q=2 THEN 'NW' WHEN q=3 THEN 'SW' WHEN q=4 THEN 'SE' ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE' WHEN qq=2 THEN 'NW' WHEN qq=3 THEN 'SW' WHEN qq=4 THEN 'SE' ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k AS qqsections WHERE ST_DWithin( ST_Transform(qqsections.the_geom, 3070), ST_Transform(ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326), 3070), 60 ) AND NOT ST_Contains( qqsections.the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
+
+          // Exit function if there is nothing nearby
+          if (data.features.length===0) { return }
+
+          // Create nearby object with empty arrays to store values
+          var nearby = {
+            twp: [],
+            rng: [],
+            sec: [],
+            q: [],
+            qq: []
+          };
+
+          var within = {
+            twp: $('#township-within').text().split(' ').pop(-1),
+            rng: $('#range-within').text().split(' ').pop(-1),
+            sec: $('#section-within').text().split(' ').pop(-1),
+            q:   $('#quarter-within').text().split(' ').pop(-1),
+            qq:  $('#qq-within').text().split(' ').pop(-1)
+          };
+          
+          // For each feature
+          for (i=0; i<data.features.length; i++) {
+            // Grab properties
+            properties = data.features[i].properties;
+
+            var twp = properties.t.toString() + 'N';
+            var rng = properties.r.toString() + properties.dir.toString();
+            var sec = properties.s.toString();
+            var q   = properties.q_text.toString();
+            var qq  = properties.qq_text.toString();
+
+            // Insert new values into nearby lists
+            if (!nearby.twp.includes(twp) && within.twp!==twp){ nearby.twp.push(twp) }
+            if (!nearby.rng.includes(rng) && within.rng!==rng){ nearby.rng.push(rng) }
+            if (!nearby.sec.includes(sec) && within.sec!==sec){ nearby.sec.push(sec) }
+            if (!nearby.q.includes(q) && within.q!==q){ nearby.q.push(q) }
+            if (!nearby.qq.includes(qq) && within.qq!==qq){ nearby.qq.push(qq) }
+          }
+
+          // Insert nearby info into html
+          if (!nearby.twp.length == 0){
+            var text = document.createTextNode(' nearby ' + nearby.twp.join(', '));
+            document.getElementById('township-nearby').appendChild(text);
+          }
+          if (!nearby.rng.length == 0){
+            var text = document.createTextNode(' nearby ' + nearby.rng.join(', '));
+            document.getElementById('range-nearby').appendChild(text);
+          }
+          if (!nearby.sec.length == 0){
+            var text = document.createTextNode(' nearby ' + nearby.sec.join(', '));
+            document.getElementById('section-nearby').appendChild(text);
+          }
+          if (!nearby.q.length == 0){
+            var text = document.createTextNode(' nearby ' + nearby.q.join(', '));
+            document.getElementById('quarter-nearby').appendChild(text);
+          }
+          if (!nearby.qq.length == 0){
+            var text = document.createTextNode(' nearby ' + nearby.qq.join(', '));
+            document.getElementById('qq-nearby').appendChild(text);
+          }
         });
       }
 
@@ -614,6 +619,36 @@
       function get_twp_sec(latlng) {
         addMarker(latlng);
         selectFeatures(latlng);
+        selectNearbyFeatures(latlng);
+      }
+
+      // Toggle hide/display the Widget
+      function toggleWidget() {
+        
+        var screenSize = screen.width;
+        if (document.getElementById("widget").style.width === "0px") {
+          if (screen.width < "600") {
+            document.getElementById("widget").style.width = "80%";
+          }
+          else {
+            document.getElementById("widget").style.width = "300px";
+          }
+        }
+        else {
+          document.getElementById("widget").style.width = "0px";
+        }
+      }
+
+      // Display the Widget when map is clicked
+      function toggleWidget2() {
+        if (document.getElementById("widget").style.width === "0px") {
+          if (screen.width < "600") {
+            document.getElementById("widget").style.width = "80%";
+          }
+          else {
+            document.getElementById("widget").style.width = "300px";
+          }
+        }
       }
 
     </script>
