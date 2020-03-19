@@ -106,10 +106,51 @@
         #get-device-location {width: 200px}
       }
 
+      #info-button {
+        z-index: 998;
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        font-size: 10px;
+        cursor:pointer;
+        width: 34px;
+        height: 34px;
+        border-radius: 3px;
+        color:black;
+        border: 2px solid rgba(0, 0, 0, 0.253);
+        background: white url('images/info-circle.svg') no-repeat;
+      }
+
     </style>
   </head>
   <body>
     <div id="map"></div>
+    <div id="info-container" class="info-wrapper">
+      <!-- <button id="info-button" onclick="toggleInfo()"></button> -->
+      <button id="info-button" type="button" class="btn btn-primary" data-toggle="modal" data-target="#infoModal"></button>
+    </div>
+
+    <div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="infoModalTitle">About the PLSS Locator App</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>The PLSS Locator is a free tool to help users identify within which Public Land Survey System (PLSS) subdivisions a location resides. The PLSS data source for this tool is the <a href="https://data-wi-dnr.opendata.arcgis.com/datasets/4c81d81ceb444aec8b4ac5b74768d4c5" target="_blank">WiDNR’s 24k Landnet</a>.</p>
+            <p>The Wisconsin State Cartographer’s Office (SCO) is a unit within the Department of Geography at the University of Wisconsin-Madison. With an outreach mission, the SCO gathers, maintains, and disseminates information about mapping and geospatial data in the state.</p>
+            <p>For more information visit our <a href="https://www.sco.wisc.edu/sco/contact/ " target="_blank">contact us</a> or visit or website at: <a href="https://www.sco.wisc.edu/" target="_blank">sco.wisc.edu</a>.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="widgets-container" class="wrapper">
       <button id="widget-button" onclick="toggleWidget('widget')">&#9776;</button>
       <nav id="widget" class="widget">
@@ -636,7 +677,33 @@
           document.getElementById("widget").style.width = "0px";
         }
       }
+      
+      // Toggle hide/display the Info
+      function toggleInfo() {
+        var modal = document.getElementById("plss-info");
 
+        if (modal.style.display === "block") {
+          modal.style.display = "none";
+        }
+        else {
+          modal.style.display = "block";
+        }
+      }
+      // When the user clicks anywhere outside of the modal, close it
+      window.onclick = function(event) {
+        if (event.target == document.getElementById("plss-info")) {
+          document.getElementById("plss-info").style.display = "none";
+        }
+      }
+
+      // On window load, change dimensions of modal if the screen is mobile
+      window.onload = function() {
+        if (screen.width < "600") {
+          document.getElementById("modal-content").style.width = "100%";
+          document.getElementById("modal-content").style.top = "0";
+          document.getElementById("modal-content").style.left = "0";
+        }
+      };
     </script>
 
   </body>
