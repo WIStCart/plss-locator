@@ -73,7 +73,6 @@
         border-radius: 3px;
         background: white;
         overflow-x: hidden;
-        /* transition: 0.5s; */ 
       }
       .widget a {
         padding: 8px 8px 8px 32px;
@@ -89,6 +88,7 @@
         font-size: 36px;
         margin-left: 50px;
         color: black;
+        cursor: pointer;
       }
       #widget-content {
         padding-left: 10px;
@@ -111,9 +111,9 @@
   <body>
     <div id="map"></div>
     <div id="widgets-container" class="wrapper">
-      <button id="widget-button" onclick="toggleWidget()">&#9776;</button>
+      <button id="widget-button" onclick="toggleWidget('widget')">&#9776;</button>
       <nav id="widget" class="widget">
-        <a class="closebtn" onclick="toggleWidget()">&times;</a>
+        <a class="closebtn" onclick="toggleWidget('widget')">&times;</a>
         <div id="widget-content">
           <div class="location-button">
             <button type="button" class="btn btn-outline-secondary" onclick="getLocation()">Get Device Location</button>
@@ -464,7 +464,7 @@
       map.on('click', function(e){
         addMarker(e.latlng);
         selectFeatures(e.latlng);
-        toggleWidget2();
+        toggleWidget('map');
         selectNearbyFeatures(e.latlng);
       });
 
@@ -622,10 +622,8 @@
         selectNearbyFeatures(latlng);
       }
 
-      // Toggle hide/display the Widget
-      function toggleWidget() {
-        
-        var screenSize = screen.width;
+      // Toggle hide/display the Widget depending if widget button is clicked or map is clicked
+      function toggleWidget(whereClicked) {
         if (document.getElementById("widget").style.width === "0px") {
           if (screen.width < "600") {
             document.getElementById("widget").style.width = "80%";
@@ -634,20 +632,8 @@
             document.getElementById("widget").style.width = "300px";
           }
         }
-        else {
+        else if (whereClicked === "widget") {
           document.getElementById("widget").style.width = "0px";
-        }
-      }
-
-      // Display the Widget when map is clicked
-      function toggleWidget2() {
-        if (document.getElementById("widget").style.width === "0px") {
-          if (screen.width < "600") {
-            document.getElementById("widget").style.width = "80%";
-          }
-          else {
-            document.getElementById("widget").style.width = "300px";
-          }
         }
       }
 
