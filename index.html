@@ -141,10 +141,19 @@
 
 
     <script>
+      //set max bounds
+      var bounds = L.latLngBounds(
+        L.latLng(48.5, -82),
+        L.latLng(41, -97.5)
+      );
+
       // Set initial map view
       const map = L.map('map',{
+        minZoom: 7,
         maxZoom: 18,
+        maxBounds: bounds
       }).setView([45,-90], 7);
+      
       map.createPane("backgroundPane").style.zIndex = 100;
       map.createPane("foregroundPane").style.zIndex = 200;
       
