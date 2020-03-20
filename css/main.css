@@ -1,0 +1,88 @@
+/* Map */
+* { margin:0; padding:0; }
+html { box-sizing:border-box; height:100%; }
+body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Arial, sans-serif; }
+#map { 
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+.wrapper {
+  display: flex;
+  align-items: stretch;
+  float: right;
+}
+
+/* Widget */
+#widget-button {
+  z-index: 998;
+  margin-top: 10px;
+  margin-right: 10px;
+  font-size: 20px;
+  cursor:pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 3px;
+  color:rgb(0, 0, 0);
+  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.253);
+}
+.widget {
+  height: auto;
+  width: 300px;
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  right: 0;
+  padding-top: 10px;
+  border-radius: 3px;
+  background: white;
+  overflow-x: hidden;
+}
+.widget a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: white;
+  display: block;
+}
+.widget .closebtn {
+  position: absolute;
+  top: -5px;
+  right: 10px;
+  font-size: 36px;
+  margin-left: 50px;
+  color: black;
+  cursor: pointer;
+}
+#widget-content {
+  padding-left: 10px;
+}
+#widget-content .output {
+  margin-bottom: 0;
+}
+#township-nearby, #range-nearby, #section-nearby, #quarter-nearby, #qq-nearby {
+  font-style: italic;
+  font-size: 0.75em;
+}
+@media screen and (max-width: 600px) {
+  .widget {width: 80%;}
+  .widget a {font-size: 18px;}
+  #get-device-location {width: 200px}
+}
+
+/* Info Button */
+#info-button {
+  z-index: 998;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  font-size: 10px;
+  cursor:pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 3px;
+  color:black;
+  border: 2px solid rgba(0, 0, 0, 0.253);
+  background: white url('../assets/img/info.svg') no-repeat;
+}
