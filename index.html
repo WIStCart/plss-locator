@@ -36,6 +36,7 @@
     <script type="text/javascript" src="../leaflet-search-control/leaflet-search-control.js"></script>
 
     <style>
+      /* Map */
       * { margin:0; padding:0; }
       html { box-sizing:border-box; height:100%; }
       body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Arial, sans-serif; }
@@ -49,6 +50,8 @@
         align-items: stretch;
         float: right;
       }
+
+      /* Widget */
       #widget-button {
         z-index: 998;
         margin-top: 10px;
@@ -106,6 +109,7 @@
         #get-device-location {width: 200px}
       }
 
+      /* Info Button */
       #info-button {
         z-index: 998;
         position: absolute;
@@ -125,6 +129,7 @@
   </head>
   <body>
     <div id="map"></div>
+
     <div id="info-container" class="info-wrapper">
       <!-- <button id="info-button" onclick="toggleInfo()"></button> -->
       <button id="info-button" type="button" class="btn btn-primary" data-toggle="modal" data-target="#infoModal"></button>
@@ -180,10 +185,9 @@
       </div>
     </div>
 
-
     <script>
-      //set max bounds
-      var bounds = L.latLngBounds(
+      // Set max view
+      var maxView = L.latLngBounds(
         L.latLng(48.5, -82),
         L.latLng(41, -97.5)
       );
@@ -192,7 +196,7 @@
       const map = L.map('map',{
         minZoom: 7,
         maxZoom: 18,
-        maxBounds: bounds
+        maxBounds: maxView
       }).setView([45,-90], 7);
       
       map.createPane("backgroundPane").style.zIndex = 100;
@@ -231,14 +235,14 @@
         mobileSearchText: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8"> <path d="M3.5 0c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5c.59 0 1.17-.14 1.66-.41a1 1 0 0 0 .13.13l1 1a1.02 1.02 0 1 0 1.44-1.44l-1-1a1 1 0 0 0-.16-.13c.27-.49.44-1.06.44-1.66 0-1.93-1.57-3.5-3.5-3.5zm0 1c1.39 0 2.5 1.11 2.5 2.5 0 .66-.24 1.27-.66 1.72-.01.01-.02.02-.03.03a1 1 0 0 0-.13.13c-.44.4-1.04.63-1.69.63-1.39 0-2.5-1.11-2.5-2.5s1.11-2.5 2.5-2.5z"/> </svg>'
       });
 
-      // Init client
+      // Initilize carto client
       var client = new carto.Client({
         apiKey: 'x8vPLNqzI5hRLT6RV-922Q',
         username: 'sco-admin'
       });
 
+      // Add toggle for base map (osm, google satellite)
       $(document).ready(function() {
-
         $('#basemapToggle').click(function() {
           if(this.checked) {
             map.removeLayer(osm);
@@ -456,7 +460,7 @@
       const qsections = new carto.layer.Layer(qsectionsSource, qsectionsStyle, {});
       const qqsections = new carto.layer.Layer(qqsectionsSource, qqsectionsStyle, {});
 
-      // Add layers
+      // Add layers to client then add to map
       client.addLayers([qqsections],{pane:'foregroundPane'});
       client.addLayers([qsections],{pane:'foregroundPane'});
       client.addLayers([sections],{pane:'foregroundPane'});
@@ -478,13 +482,14 @@
           navigator.geolocation.getCurrentPosition(function(position) {
             var latlng = L.latLng(position.coords.latitude,position.coords.longitude);
 
-            get_twp_sec(latlng);
+            getPlssInfo(latlng);
 
             // Fly to location on map
             map.flyTo(latlng, 15,{
               animate: true,
               duration: 0.5
             });
+
           });
         } else { 
           $('.output').text("Geolocation is not supported by this browser.");
@@ -509,8 +514,9 @@
         selectNearbyFeatures(e.latlng);
       });
 
+      // Function to add marker
       function addMarker(latlng) {
-        // remove locationMarker if on map
+        // Remove locationMarker if on map
         if(map.hasLayer(locationMarker)){
           map.removeLayer(locationMarker);
         };
@@ -519,6 +525,7 @@
         map.addLayer(locationMarker); 
       }
 
+      // Select and highlight the features a user clicks on
       function selectFeatures(latlng) {
 
         selectedFeatures.clearLayers();
@@ -532,6 +539,7 @@
         $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM "sco-admin".scobase_wi_plss_qsections_24k WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
           selectedFeatures.addData(data);
         });
+        // Use qq section selection to fill in info widget
         $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT *, CASE WHEN d=2 THEN 'W'WHEN d=4 THEN 'E'ELSE NULL END AS dir, CASE WHEN q=1 THEN 'NE'WHEN q=2 THEN 'NW'WHEN q=3 THEN 'SW'WHEN q=4 THEN 'SE'ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE'WHEN qq=2 THEN 'NW'WHEN qq=3 THEN 'SW'WHEN qq=4 THEN 'SE'ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k as qqsec WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
           selectedFeatures.addData(data);
 
@@ -546,6 +554,7 @@
             'SW': 'southwest'
           };
 
+          // Grab vaiables from returned data
           var properties = data.features[0].properties
           var dir = properties.dir.toString();
           var twp = properties.t.toString();
@@ -557,6 +566,7 @@
           var qqText = cardinalDir[qq];
           var dirText = cardinalDir[dir];
 
+          // Build text strings for inserting
           var townshipStr = "Township: " + twp + "N";
           var rangeStr = "<br>Range: " + rng + dir;
           var sectionStr =  "<br>Section: " + sec; 
@@ -564,7 +574,7 @@
           var qqSectionStr =  "<br>Quarter Quarter Section: " + qq;
           var verbalDesc = "The " + qqText + " quarter of the " + qText + " quarter of Section " + sec + ", Township " + twp + " north, Range " + rng + " " + dirText + ", fourth Principal Meridian.";
 
-
+          // Insert strings into widget
           $('#township-within').html(townshipStr)
           $('#range-within').html(rangeStr)
           $('#section-within').html(sectionStr)
@@ -572,6 +582,7 @@
           $('#qq-within').html(qqSectionStr)
           $('#verbal-desc').html(verbalDesc)
 
+          // Update lat/long in widget
           $('.lat-long-output').html(latlng.lng.toPrecision(6) + `, ` + latlng.lat.toPrecision(6))
         });
       }
@@ -579,10 +590,8 @@
       // Select features within a specified distance of the current location
       function selectNearbyFeatures(latlng){
         
-        
-
         // Clear nearby numbers while query runs
-        var ids = ['township-nearby','range-nearby','section-nearby','quarter-nearby','qq-nearby']
+        var ids = ['township-nearby','range-nearby','section-nearby','quarter-nearby','qq-nearby'];
         for (i=0; i<ids.length; i++) {
           var node = document.getElementById(ids[i]);
           while (node.firstChild) {
@@ -605,6 +614,7 @@
             qq: []
           };
 
+          // Grab existing info from widget
           var within = {
             twp: $('#township-within').text().split(' ').pop(-1),
             rng: $('#range-within').text().split(' ').pop(-1),
@@ -657,7 +667,7 @@
       }
 
       // Get the township and section from latitude and longitude
-      function get_twp_sec(latlng) {
+      function getPlssInfo(latlng) {
         addMarker(latlng);
         selectFeatures(latlng);
         selectNearbyFeatures(latlng);
@@ -689,21 +699,6 @@
           modal.style.display = "block";
         }
       }
-      // When the user clicks anywhere outside of the modal, close it
-      window.onclick = function(event) {
-        if (event.target == document.getElementById("plss-info")) {
-          document.getElementById("plss-info").style.display = "none";
-        }
-      }
-
-      // On window load, change dimensions of modal if the screen is mobile
-      window.onload = function() {
-        if (screen.width < "600") {
-          document.getElementById("modal-content").style.width = "100%";
-          document.getElementById("modal-content").style.top = "0";
-          document.getElementById("modal-content").style.left = "0";
-        }
-      };
     </script>
 
   </body>
