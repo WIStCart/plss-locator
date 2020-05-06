@@ -116,13 +116,17 @@ const qqsectionsSource = new carto.source.SQL(`
 `);
 
 // Utility to dynamically generate syling for layer and labels at different zoom levels
-function scaleMapElements(zoomStart, zoomEnd, scaleFactor, scaleInitial, styleString) {
+function scaleMapElements(zoomStart, zoomEnd, valueStart, valueEnd, styleString) {
   
   var zoomCSS = '';
   
+  var zoomDelta = zoomEnd - zoomStart;
+  var valueDelta = valueEnd - valueStart;
+
   // Iterate through zoom level index
-  for (i = 0; i < zoomEnd - zoomStart; i++){
-    zoomCSS += '[zoom = ' + (zoomStart + i) + ']{' + styleString + ':' + (Math.pow(i, 2)*scaleFactor + scaleInitial) + ';}'
+  for (i = 0; i <= zoomDelta; i++){
+    // zoomCSS += '[zoom = ' + (zoomStart + i) + ']{' + styleString + ':' + (Math.pow(i, 2)*scaleFactor + scaleInitial) + ';}'
+    zoomCSS += '\n[zoom = ' + (zoomStart + i) + ']{' + styleString + ':' + ((1/(1+Math.E**(5-10*((i+zoomDelta)/(zoomDelta)-1)))*valueDelta + valueStart)) + ';}'
   }
 
   return zoomCSS
@@ -131,15 +135,10 @@ function scaleMapElements(zoomStart, zoomEnd, scaleFactor, scaleInitial, styleSt
 // Township style
 var townshipsCSS = `
   #layer {
-    polygon-fill: #162945;
-    polygon-opacity: 0;
-
     ::outline {
-      [zoom>7]{
-        line-opacity: 0;
-      }` +
-      scaleMapElements(8, 19, 0.8, 1.5, 'line-width') +
-      scaleMapElements(8, 17, .01, 0.2, 'line-opacity') +
+      line-opacity: 0;` +
+      scaleMapElements(10, 18, 1.5, 10, 'line-width') +
+      scaleMapElements(10, 18, 0.2, 1, 'line-opacity') +
     `}
 
     ::labels {
@@ -155,8 +154,8 @@ var townshipsCSS = `
         text-placement: point;
         text-placement-type: dummy;
       }` +
-      scaleMapElements(11, 13, 10, 20, 'text-size') +
-      scaleMapElements(11, 13, 0.1, 0.9, 'text-opacity') +
+      scaleMapElements(11, 12, 20, 30, 'text-size') +
+      scaleMapElements(11, 12, 0.7, 1, 'text-opacity') +
     `}
   }
 `
@@ -165,20 +164,15 @@ const townshipsStyle = new carto.style.CartoCSS(townshipsCSS);
 // Section style
 var sectionsCSS = `
   #layer {
-    polygon-fill: #162945;
-    polygon-opacity: 0;
     ::outline {
       line-color: #000; /* dcdfe3 */
-
-      [zoom<13] {
-        line-opacity: 0;
-      }` +
-      scaleMapElements(13, 19, 1.1, 1, 'line-width') +
-      scaleMapElements(13, 19, 0.02, 0.5, 'line-opacity') +
+      line-opacity: 0;` +
+      scaleMapElements(13, 18, 1, 4, 'line-width') +
+      scaleMapElements(13, 18, 0.7, 1, 'line-opacity') +
     `}
     
     ::labels {
-      [zoom >= 13][zoom <= 16]{
+      [zoom >= 13][zoom <= 15]{
         text-name: 'SEC\\n'+[sec];
         text-face-name: 'Lato Bold';
         text-fill: #465159;
@@ -189,8 +183,8 @@ var sectionsCSS = `
         text-placement: point;
         text-placement-type: dummy;
       }` +
-      scaleMapElements(13, 17, 9, 18, 'text-size') +
-      scaleMapElements(13, 17, 0.01, 0.85, 'text-opacity') +
+      scaleMapElements(13, 15, 18, 28, 'text-size') +
+      scaleMapElements(13, 15, 0.7, 1, 'text-opacity') +
     `}
   }
 `
@@ -199,16 +193,11 @@ const sectionsStyle = new carto.style.CartoCSS(sectionsCSS);
 // Quarter section style
 var qSectionsCSS = `
   #layer {
-    polygon-fill: #162945;
-    polygon-opacity: 0;
     ::outline {
       line-color: #727d85;
-
-      [zoom<14] {
-        line-opacity: 0;
-      }` +
-      scaleMapElements(14, 19, 1.1, 1, 'line-width') +
-      scaleMapElements(14, 19, 0.02, 0.3, 'line-opacity') +
+      line-opacity: 0;` +
+      scaleMapElements(14, 18, 1, 4, 'line-width') +
+      scaleMapElements(14, 18, 0.7, 1, 'line-opacity') +
     `}
     
     ::labels {
@@ -223,8 +212,8 @@ var qSectionsCSS = `
         text-placement: point;
         text-placement-type: dummy;
       }` +
-      scaleMapElements(14, 17, 10, 20, 'text-size') +
-      scaleMapElements(14, 17, 0.02, 0.85, 'text-opacity') +
+      scaleMapElements(14, 16, 18, 28, 'text-size') +
+      scaleMapElements(14, 16, 0.7, 1, 'text-opacity') +
     `}
   }
 `
@@ -233,18 +222,12 @@ const qsectionsStyle = new carto.style.CartoCSS(qSectionsCSS);
 // Quarter-quarter section style
 var qqSectionsCSS = `
   #layer {
-    polygon-fill: #162945;
-    polygon-opacity: 0;
     ::outline {
       line-color: #99a2a8;
-      
       line-dasharray: 8,16;
-
-      [zoom < 15]{
-        line-opacity: 0;
-      }` +
-      scaleMapElements(15, 19, 1.1, 1, 'line-width') +
-      scaleMapElements(15, 19, 0.02, 0.15, 'line-opacity') +
+      line-opacity: 0;` +
+      scaleMapElements(15, 18, 1, 2, 'line-width') +
+      scaleMapElements(15, 18, 0.2, 1, 'line-opacity') +
     `}
     
     ::labels {
@@ -259,11 +242,16 @@ var qqSectionsCSS = `
         text-placement: point;
         text-placement-type: dummy;
       }` +
-      scaleMapElements(15, 19, 10, 20, 'text-size') +
-      scaleMapElements(15, 19, 0.015, 0.85, 'text-opacity') +
+      scaleMapElements(15, 18, 18, 28, 'text-size') +
+      scaleMapElements(15, 18, 0.7, 1, 'text-opacity') +
     `}
   }
 `
+console.log(townshipsCSS)
+console.log(sectionsCSS)
+console.log(qSectionsCSS)
+console.log(qqSectionsCSS)
+
 const qqsectionsStyle = new carto.style.CartoCSS(qqSectionsCSS);
 
 // Create layers
