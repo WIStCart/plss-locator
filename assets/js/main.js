@@ -126,7 +126,7 @@ function scaleMapElements(zoomStart, zoomEnd, valueStart, valueEnd, styleString)
   // Iterate through zoom level index
   for (i = 0; i <= zoomDelta; i++){
     // zoomCSS += '[zoom = ' + (zoomStart + i) + ']{' + styleString + ':' + (Math.pow(i, 2)*scaleFactor + scaleInitial) + ';}'
-    zoomCSS += '\n[zoom = ' + (zoomStart + i) + ']{' + styleString + ':' + ((1/(1+Math.E**(5-10*((i+zoomDelta)/(zoomDelta)-1)))*valueDelta + valueStart)) + ';}'
+    zoomCSS += '\n[zoom = ' + (zoomStart + i) + ']{' + styleString + ':' + ((1/(1+Math.E**(5-10*i/zoomDelta)))*valueDelta + valueStart) + ';}'
   }
 
   return zoomCSS
