@@ -25,6 +25,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <!-- Leaflet Search Control -->
     <link rel="stylesheet" href="../leaflet-search-control/leaflet-search-control.css">
+    <!-- Header CSS -->
+    <link rel="stylesheet" href="../sco-header/header.css">
     
     <!-- Include Leaflet -->
     <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
@@ -34,19 +36,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <script type="text/javascript" src="../leaflet-search-control/leaflet-search-control.js"></script>
+    <!-- Header JS -->
+    <script type="text/javascript" src="../sco-header/header.js"></script>
 
     <!-- Project Assets -->
     <link href="css/main.css" rel="stylesheet">
   </head>
   <body>
+    <div id="header"></div>
+
     <div id="map"></div>
 
     <div id="info-container" class="info-wrapper">
       <!-- <button id="info-button" onclick="toggleInfo()"></button> -->
-      <button id="info-button" type="button" class="btn btn-primary" data-toggle="modal" data-target="#infoModal"></button>
+      <button id="info-button" type="button" class="btn btn-primary" data-toggle="modal" data-target="#moreInfoModal"></button>
     </div>
 
-    <div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalTitle" aria-hidden="true">
+    <div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -95,6 +101,16 @@
         </span>
       </div>
     </div>
+
+    <script>
+      $("#header").addHeader({
+        baseURL: "../sco-header/",
+        Title: "PLSS Locator",
+        Num_tabs: 0,
+        altTitle: ""
+      });
+    </script>
+
     <script src="assets/js/main.js"></script>
   </body>
 </html>
