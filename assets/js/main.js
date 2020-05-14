@@ -488,14 +488,15 @@ function toggleWidget(whereClicked) {
   }
 }
 
-// Toggle hide/display the Info
-function toggleInfo() {
-  var modal = document.getElementById("plss-info");
+// // Toggle hide/display the Info
+// function toggleInfo() {
+//   var modal = document.getElementById("plss-info");
 
-  if (modal.style.display === "block") {
-    modal.style.display = "none";
-  }
-  else {
-    modal.style.display = "block";
-  }
-}
+//   if (modal.style.display === "block") {
+//     modal.style.display = "none";
+
+//   }
+//   else {
+//     modal.style.display = "block";
+//   }
+// }
