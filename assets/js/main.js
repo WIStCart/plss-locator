@@ -392,8 +392,7 @@ function selectNearbyFeatures(latlng){
   
   // Clear nearby numbers while query runs
   $('#nearby').html('\
-    Due to limitations of this PLSS dataset, the point clicked could alternatively be in:\
-    <div class="spinner">\
+    <div class="spinner text-center">\
       <div class="bounce1"></div>\
       <div class="bounce2"></div>\
       <div class="bounce3"></div>\
@@ -405,10 +404,7 @@ function selectNearbyFeatures(latlng){
 
     // Exit function if there is nothing nearby
     if (data.features.length===0) {
-      $('#nearby').html('\
-        Due to limitations of this PLSS dataset, the point clicked could alternatively be in:\
-        <p>None</p>\
-      ');
+      $('#nearby').html('');
       return
     }
 
