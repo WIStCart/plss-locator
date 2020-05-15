@@ -41,7 +41,7 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
   overflow-x: hidden;
 }
 .widget a {
-  padding: 8px 8px 8px 32px;
+  padding: 0px 0px 8px 8px;
   text-decoration: none;
   font-size: 25px;
   color: white;
@@ -49,10 +49,9 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
 }
 .widget .closebtn {
   position: absolute;
-  top: -5px;
+  line-height: 18px;
   right: 10px;
   font-size: 36px;
-  margin-left: 50px;
   color: black;
   cursor: pointer;
 }
@@ -71,7 +70,7 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
 #info-button {
   z-index: 998;
   position: absolute;
-  top: 194px;
+  top: 240px;
   left: 10px;
   font-size: 10px;
   cursor:pointer;
@@ -81,6 +80,20 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
   color:black;
   border: 2px solid rgba(0, 0, 0, 0.253);
   background: white url('../assets/img/info.svg') no-repeat;
+}
+
+#toggle-sat-view {
+    width: 200px;
+    margin: 0 0 0 0;
+    padding: 0 0 20px 0;
+}
+
+/* tweaking parameters of leaflet-control-locate to make icon fit better */
+.leaflet-control-locate a {
+    padding: 1px 0 0 0;
+    font-size: 1.4rem;
+    color: #444;
+    cursor: pointer;
 }
 
 /* Mobile */

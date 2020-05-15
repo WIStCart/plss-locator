@@ -11,6 +11,19 @@ const map = L.map('map',{
   maxBounds: maxView
 }).setView([45,-90], 7);
 
+var lc = L.control.locate({
+    position: 'topleft',
+    flyTo: true,
+    drawCircle: true,
+    locateOptions: {
+               enableHighAccuracy: true
+    },
+    strings: {
+        title: "Find my location",
+        outsideMapBoundsMsg: "Sorry, your Web browser or mobile device is providing a location outside Wisconsin."
+    }
+}).addTo(map);
+
 map.createPane("backgroundPane").style.zIndex = 100;
 map.createPane("foregroundPane").style.zIndex = 200;
 
@@ -276,28 +289,6 @@ var selectedStyle = {
 };
 var selectedFeatures = L.geoJson(null,{style: selectedStyle}).addTo(map);
 
-// Get location from device
-function getLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      var latlng = L.latLng(position.coords.latitude,position.coords.longitude);
-
-      getPlssInfo(latlng);
-
-      // Fly to location on map
-      map.flyTo(latlng, 15,{
-        animate: true,
-        duration: 0.5
-      });
-    },
-    function(error) {
-      if (error.code == error.PERMISSION_DENIED)
-        alert('Page does not have permission to get your location. Update your settings if you would like to use this function.');
-    });
-  } else { 
-    alert("Geolocation is not supported by this browser.");
-  }
-}
 
 // Set Global Variable that will hold the marker that goes at our location when found
 var locationMarker = null;
