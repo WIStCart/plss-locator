@@ -411,7 +411,7 @@ function selectNearbyFeatures(latlng){
       return
     }
 
-    var nearbyHTML = 'Due to limitations of this PLSS dataset, the point clicked could alternatively be in:';
+    var nearbyHTML = 'The location you clicked is close to a PLSS boundary.  Due to accuracy limitations of this PLSS dataset, your location may be in the following:';
     
     // For each feature
     for (i=0; i<data.features.length; i++) {
