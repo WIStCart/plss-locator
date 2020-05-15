@@ -80,24 +80,25 @@
         <div id="widget-content">
           <div class="location-button">
             <button type="button" class="btn btn-outline-secondary" onclick="getLocation()">Get Device Location</button>
+            <div id="location-warning"></div>
           </div>
-          <br>
+          
           <div class="custom-control custom-switch">
             <input type="checkbox" class="custom-control-input" id="basemapToggle">
             <label class="custom-control-label" for="basemapToggle">Toggle Satellite</label>
           </div>
-          <br>
+          
           <p>Lat/Long: <span class="lat-long-output"></span></p>
           <h3>PLSS Info:</h3>
-          <p class ="output">
-            <span id="township-within">------</span><span id="township-nearby"></span>
-            <span id="range-within"></span><span id="range-nearby"></span>
-            <span id="section-within"></span><span id="section-nearby"></span>
-            <span id="quarter-within"></span><span id="quarter-nearby"></span>
-            <span id="qq-within"></span><span id="qq-nearby"></span>
-            <br><br>
-            <div id="verbal-desc"></div>
+          <p>
+            <span id="township-within">Click on Map</span>
+            <span id="range-within"></span>
+            <span id="section-within"></span>
+            <span id="quarter-within"></span>
+            <span id="qq-within"></span>
           </p>
+          <p id="verbal-desc"></p>
+          <p id="nearby"></p>
         </span>
       </div>
     </div>
