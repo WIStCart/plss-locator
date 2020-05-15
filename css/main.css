@@ -62,11 +62,6 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
 #widget-content > div {
   margin-bottom: 1rem;
 }
-@media screen and (max-width: 600px) {
-  .widget {width: 80%;}
-  .widget a {font-size: 18px;}
-  #get-device-location {width: 200px}
-}
 #nearby {
   font-size: 0.75em;
   font-style: italic;
@@ -76,7 +71,7 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
 #info-button {
   z-index: 998;
   position: absolute;
-  bottom: 10px;
+  top: 194px;
   left: 10px;
   font-size: 10px;
   cursor:pointer;
@@ -86,6 +81,25 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
   color:black;
   border: 2px solid rgba(0, 0, 0, 0.253);
   background: white url('../assets/img/info.svg') no-repeat;
+}
+
+/* Mobile */
+@media screen and (max-width: 600px) {
+  #map {
+    height: 100%;
+  }
+  .widget {
+    top: 10px;
+    width: 80%;
+  }
+  .widget a {font-size: 18px;}
+  #get-device-location {width: 200px}
+  #info-button {
+    top: 84px;
+  }
+  #widget-button {
+    margin-top: 10px;
+  }
 }
 
 /* Spinner */
