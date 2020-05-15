@@ -247,10 +247,10 @@ var qqSectionsCSS = `
     `}
   }
 `
-console.log(townshipsCSS)
-console.log(sectionsCSS)
-console.log(qSectionsCSS)
-console.log(qqSectionsCSS)
+// console.log(townshipsCSS)
+// console.log(sectionsCSS)
+// console.log(qSectionsCSS)
+// console.log(qqSectionsCSS)
 
 const qqsectionsStyle = new carto.style.CartoCSS(qqSectionsCSS);
 
@@ -292,7 +292,7 @@ function getLocation() {
 
     });
   } else { 
-    $('.output').text("Geolocation is not supported by this browser.");
+    $('#location-warning').text("Geolocation is not supported by this browser.");
   }
 }
 
@@ -391,37 +391,28 @@ function selectFeatures(latlng) {
 function selectNearbyFeatures(latlng){
   
   // Clear nearby numbers while query runs
-  var ids = ['township-nearby','range-nearby','section-nearby','quarter-nearby','qq-nearby'];
-  for (i=0; i<ids.length; i++) {
-    var node = document.getElementById(ids[i]);
-    while (node.firstChild) {
-      node.removeChild(node.firstChild);
-    }
-  }
+  $('#nearby').html('\
+    Due to limitations of this PLSS dataset, the point clicked could alternatively be in:\
+    <div class="spinner">\
+      <div class="bounce1"></div>\
+      <div class="bounce2"></div>\
+      <div class="bounce3"></div>\
+    </div>\
+  ');
 
   // Query quarter quarter sections to get nearby info
   $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT NULL AS the_geom, CASE WHEN d=2 THEN 'W' WHEN d=4 THEN 'E' ELSE NULL END AS dir, t, r, s, CASE WHEN q=1 THEN 'NE' WHEN q=2 THEN 'NW' WHEN q=3 THEN 'SW' WHEN q=4 THEN 'SE' ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE' WHEN qq=2 THEN 'NW' WHEN qq=3 THEN 'SW' WHEN qq=4 THEN 'SE' ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k AS qqsections WHERE ST_DWithin( ST_Transform(qqsections.the_geom, 3070), ST_Transform(ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326), 3070), 60 ) AND NOT ST_Contains( qqsections.the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
 
     // Exit function if there is nothing nearby
-    if (data.features.length===0) { return }
+    if (data.features.length===0) {
+      $('#nearby').html('\
+        Due to limitations of this PLSS dataset, the point clicked could alternatively be in:\
+        <p>None</p>\
+      ');
+      return
+    }
 
-    // Create nearby object with empty arrays to store values
-    var nearby = {
-      twp: [],
-      rng: [],
-      sec: [],
-      q: [],
-      qq: []
-    };
-
-    // Grab existing info from widget
-    var within = {
-      twp: $('#township-within').text().split(' ').pop(-1),
-      rng: $('#range-within').text().split(' ').pop(-1),
-      sec: $('#section-within').text().split(' ').pop(-1),
-      q:   $('#quarter-within').text().split(' ').pop(-1),
-      qq:  $('#qq-within').text().split(' ').pop(-1)
-    };
+    var nearbyHTML = 'Due to limitations of this PLSS dataset, the point clicked could alternatively be in:';
     
     // For each feature
     for (i=0; i<data.features.length; i++) {
@@ -434,35 +425,13 @@ function selectNearbyFeatures(latlng){
       var q   = properties.q_text.toString();
       var qq  = properties.qq_text.toString();
 
-      // Insert new values into nearby lists
-      if (!nearby.twp.includes(twp) && within.twp!==twp){ nearby.twp.push(twp) }
-      if (!nearby.rng.includes(rng) && within.rng!==rng){ nearby.rng.push(rng) }
-      if (!nearby.sec.includes(sec) && within.sec!==sec){ nearby.sec.push(sec) }
-      if (!nearby.q.includes(q) && within.q!==q){ nearby.q.push(q) }
-      if (!nearby.qq.includes(qq) && within.qq!==qq){ nearby.qq.push(qq) }
+      var dtrsqqq = '<div>T' + twp + ' R' + rng + ' S' + sec + ' ' + q + ' ' + qq + '</div>';
+
+      nearbyHTML += dtrsqqq;
     }
 
-    // Insert nearby info into html
-    if (!nearby.twp.length == 0){
-      var text = document.createTextNode(' nearby ' + nearby.twp.join(', '));
-      document.getElementById('township-nearby').appendChild(text);
-    }
-    if (!nearby.rng.length == 0){
-      var text = document.createTextNode(' nearby ' + nearby.rng.join(', '));
-      document.getElementById('range-nearby').appendChild(text);
-    }
-    if (!nearby.sec.length == 0){
-      var text = document.createTextNode(' nearby ' + nearby.sec.join(', '));
-      document.getElementById('section-nearby').appendChild(text);
-    }
-    if (!nearby.q.length == 0){
-      var text = document.createTextNode(' nearby ' + nearby.q.join(', '));
-      document.getElementById('quarter-nearby').appendChild(text);
-    }
-    if (!nearby.qq.length == 0){
-      var text = document.createTextNode(' nearby ' + nearby.qq.join(', '));
-      document.getElementById('qq-nearby').appendChild(text);
-    }
+    // Add nearbyHTML to document
+    $('#nearby').html(nearbyHTML);
   });
 }
 
@@ -487,16 +456,3 @@ function toggleWidget(whereClicked) {
     document.getElementById("widget").style.width = "0px";
   }
 }
-
-// // Toggle hide/display the Info
-// function toggleInfo() {
-//   var modal = document.getElementById("plss-info");
-
-//   if (modal.style.display === "block") {
-//     modal.style.display = "none";
-
-//   }
-//   else {
-//     modal.style.display = "block";
-//   }
-// }
