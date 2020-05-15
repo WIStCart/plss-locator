@@ -289,10 +289,13 @@ function getLocation() {
         animate: true,
         duration: 0.5
       });
-
+    },
+    function(error) {
+      if (error.code == error.PERMISSION_DENIED)
+        alert('Page does not have permission to get your location. Update your settings if you would like to use this function.');
     });
   } else { 
-    $('#location-warning').text("Geolocation is not supported by this browser.");
+    alert("Geolocation is not supported by this browser.");
   }
 }
 
