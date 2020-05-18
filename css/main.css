@@ -40,20 +40,16 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
   background: white;
   overflow-x: hidden;
 }
-.widget a {
-  padding: 0px 0px 8px 8px;
-  text-decoration: none;
-  font-size: 25px;
-  color: white;
-  display: block;
-}
-.widget .closebtn {
+#widget .closebtn {
   position: absolute;
-  line-height: 18px;
-  right: 10px;
-  font-size: 36px;
-  color: black;
+  top: 0;
+  right: 0;
+  display: block;
+  padding: 10px;
+  line-height: 13pt;
+  font-size: 26pt;
   cursor: pointer;
+  z-index: 1;
 }
 #widget-content {
   padding: 0 10px;
@@ -80,20 +76,6 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
   color:black;
   border: 2px solid rgba(0, 0, 0, 0.253);
   background: white url('../assets/img/info.svg') no-repeat;
-}
-
-#toggle-sat-view {
-    width: 200px;
-    margin: 0 0 0 0;
-    padding: 0 0 20px 0;
-}
-
-/* tweaking parameters of leaflet-control-locate to make icon fit better */
-.leaflet-control-locate a {
-    padding: 1px 0 0 0;
-    font-size: 1.4rem;
-    color: #444;
-    cursor: pointer;
 }
 
 /* Mobile */

@@ -11,19 +11,6 @@ const map = L.map('map',{
   maxBounds: maxView
 }).setView([45,-90], 7);
 
-var lc = L.control.locate({
-    position: 'topleft',
-    flyTo: true,
-    drawCircle: true,
-    locateOptions: {
-               enableHighAccuracy: true
-    },
-    strings: {
-        title: "Find my location",
-        outsideMapBoundsMsg: "Sorry, your Web browser or mobile device is providing a location outside Wisconsin."
-    }
-}).addTo(map);
-
 map.createPane("backgroundPane").style.zIndex = 100;
 map.createPane("foregroundPane").style.zIndex = 200;
 
@@ -41,6 +28,20 @@ var google = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
     subdomains:['mt0','mt1','mt2','mt3'],
     pane:'backgroundPane'
 });
+
+// Add locate control
+var lc = L.control.locate({
+  position: 'topleft',
+  flyTo: true,
+  drawCircle: true,
+  locateOptions: {
+             enableHighAccuracy: true
+  },
+  strings: {
+      title: "Find my location",
+      outsideMapBoundsMsg: "Sorry, your Web browser or mobile device is providing a location outside Wisconsin."
+  }
+}).addTo(map);
 
 // Add search control
 $(map).addSearchControl({
