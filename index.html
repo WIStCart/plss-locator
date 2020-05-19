@@ -52,12 +52,12 @@
 
     <div id="map"></div>
 
-    <div id="info-container" class="info-wrapper">
-      <!-- <button id="info-button" onclick="toggleInfo()"></button> -->
+    <!-- <div id="info-container" class="info-wrapper">
       <button id="info-button" type="button" class="btn btn-primary" data-toggle="modal" data-target="#moreInfoModal"></button>
-    </div>
+    </div> -->
 
-    <div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalTitle" aria-hidden="true">
+    <!-- About Bootstrap Modal (temporarily deprecated) -->
+    <!-- <div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -76,7 +76,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div id="widgets-container" class="wrapper">
       <button id="widget-button" onclick="toggleWidget('widget')">&#9776;</button>
@@ -109,7 +109,9 @@
       $("#header").addHeader({
         baseURL: "../sco-header/",
         Title: "PLSS Locator",
-        Num_tabs: 0,
+        Num_tabs: 1,
+        Tab_name1: "About",
+        Tab_link1: "assets/html/about.html",
         altTitle: ""
       });
     </script>
