@@ -39,7 +39,7 @@ var lc = L.control.locate({
   },
   strings: {
     title: "Find my location",
-    outsideMapBoundsMsg: "Sorry, your Web browser or mobile device is providing a location outside Wisconsin."
+    outsideMapBoundsMsg: "Sorry, your Web browser or mobile device is providing a location outside the PLSS map extent."
   }
 }).addTo(map);
 

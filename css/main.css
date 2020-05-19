@@ -62,6 +62,11 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
   font-style: italic;
 }
 
+/* Locate Control */
+.leaflet-control-locate .fa-map-marker {
+  color: black;
+}
+
 /* Info Button */
 #info-button {
   z-index: 998;
