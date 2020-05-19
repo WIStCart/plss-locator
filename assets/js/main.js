@@ -24,9 +24,9 @@ map.addLayer(osm);
 
 // Google Satellite Basemap
 var google = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
-    maxZoom: 20,
-    subdomains:['mt0','mt1','mt2','mt3'],
-    pane:'backgroundPane'
+  maxZoom: 20,
+  subdomains:['mt0','mt1','mt2','mt3'],
+  pane:'backgroundPane'
 });
 
 // Add locate control
@@ -35,11 +35,11 @@ var lc = L.control.locate({
   flyTo: true,
   drawCircle: true,
   locateOptions: {
-             enableHighAccuracy: true
+    enableHighAccuracy: true
   },
   strings: {
-      title: "Find my location",
-      outsideMapBoundsMsg: "Sorry, your Web browser or mobile device is providing a location outside Wisconsin."
+    title: "Find my location",
+    outsideMapBoundsMsg: "Sorry, your Web browser or mobile device is providing a location outside Wisconsin."
   }
 }).addTo(map);
 
@@ -261,12 +261,12 @@ var qqSectionsCSS = `
     `}
   }
 `
+const qqsectionsStyle = new carto.style.CartoCSS(qqSectionsCSS);
+
 // console.log(townshipsCSS)
 // console.log(sectionsCSS)
 // console.log(qSectionsCSS)
 // console.log(qqSectionsCSS)
-
-const qqsectionsStyle = new carto.style.CartoCSS(qqSectionsCSS);
 
 // Create layers
 const townships = new carto.layer.Layer(townshipsSource, townshipsStyle, {});
