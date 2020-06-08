@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-129066-2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-129066-2');
+    </script>
+
     <title>PLSS Locator</title>
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
+
     <!-- Include Leaflet -->
-    
     <link href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" rel="stylesheet">
     <!-- Include CARTO.js -->
     <script src="https://cartodb-libs.global.ssl.fastly.net/carto.js/v4.1.11/carto.min.js"></script>
@@ -14,7 +24,12 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <!-- Leaflet Search Control -->
-    <link rel="stylesheet" href="https://maps.sco.wisc.edu/searchControl/searchControl.css">
+    <link rel="stylesheet" href="../leaflet-search-control/leaflet-search-control.css">
+    <!-- Header CSS -->
+    <link rel="stylesheet" href="../sco-header/header.css">
+    <!-- Include Locatecontrol CSS-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.72.0/dist/L.Control.Locate.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     
     <!-- Include Leaflet -->
     <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
@@ -23,437 +38,85 @@
     <!-- Needed for the Search Control -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://maps.sco.wisc.edu/searchControl/searchControl.js"></script>
-    
-    <style>
-      * { margin:0; padding:0; }
-      html { box-sizing:border-box; height:100%; }
-      body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Arial, sans-serif; }
-      #map { 
-        position: absolute;
-        height: 100%;
-        width: 100%;
-      }
-      #widgets {
-        z-index: 999;
-        border: solid #babac3 10px;
-        background:white;
-        padding:10px;
-        margin-top: 10px;
-      }
-      #widgets .output {
-        margin-bottom: 0;
-      }
-      #widgets-container .row {
-        margin-right: 10px;
-      }
-      .searchControl-container {
-        box-shadow: none;
-        width: 34px;
-        height: 34px;
-        border-radius: 3px;
-        background: white;
-        border: 2px solid rgba(0,0,0,0.2);
-      }
-      #searchText-div {
-        fill: black;
-        line-height: 30px;
-      }
-    </style>
+    <script type="text/javascript" src="../leaflet-search-control/leaflet-search-control.js"></script>
+    <!-- Include Locatecontrol -->   
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.72.0/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+    <!-- Header JS -->
+    <script type="text/javascript" src="../sco-header/header.js"></script>
+
+    <!-- Project Assets -->
+    <link href="css/main.css" rel="stylesheet">
   </head>
   <body>
+    <div id="header"></div>
+
     <div id="map"></div>
-    <div id="widgets-container">
-      <div class="row">
-        <div id="widgets" class="offset-lg-9 col-lg-3 offset-md-8 col-md-4 offset-sm-6 col-sm-6 offset-3 col-9">
-          <button id="get-device-location" class="col-12" onclick="getLocation()">Get Device Location</button>
-          <br><br>
-          <div class="custom-control custom-switch">
-            <input type="checkbox" class="custom-control-input" id="basemapToggle">
-            <label class="custom-control-label" for="basemapToggle">Toggle Satellite</label>
+
+    <!-- <div id="info-container" class="info-wrapper">
+      <button id="info-button" type="button" class="btn btn-primary" data-toggle="modal" data-target="#moreInfoModal"></button>
+    </div> -->
+
+    <!-- About Bootstrap Modal (temporarily deprecated) -->
+    <!-- <div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="infoModalTitle">About the PLSS Locator App</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </div>
-          <br>
+          <div class="modal-body">
+            <p>The PLSS Locator is a free tool to help users identify within which Public Land Survey System (PLSS) subdivisions a location resides. The PLSS data source for this tool is the <a href="https://data-wi-dnr.opendata.arcgis.com/datasets/4c81d81ceb444aec8b4ac5b74768d4c5" target="_blank">WiDNR’s 24k Landnet</a>.</p>
+            <p>The Wisconsin State Cartographer’s Office (SCO) is a unit within the Department of Geography at the University of Wisconsin-Madison. With an outreach mission, the SCO gathers, maintains, and disseminates information about mapping and geospatial data in the state.</p>
+            <p>For more information, <a href="https://www.sco.wisc.edu/sco/contact/ " target="_blank">contact us</a> or visit our website at: <a href="https://www.sco.wisc.edu/" target="_blank">sco.wisc.edu</a>.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div> -->
+
+    <div id="widgets-container" class="wrapper">
+      <button id="widget-button" onclick="toggleWidget('widget')">&#9776;</button>
+      <nav id="widget" class="widget">       
+        <div id="widget-content">
+          <div class="closebtn" onclick="toggleWidget('widget')">&times;</div>
+          <div id="toggle-sat-view">
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="basemapToggle">
+                <label class="custom-control-label" for="basemapToggle">Toggle Satellite</label>
+            </div>
+          </div>
+          
           <p>Lat/Long: <span class="lat-long-output"></span></p>
           <h3>PLSS Info:</h3>
-          <p class="output">-----</p>
-        </div>
+          <p>
+            <span id="township-within">Click on Map</span>
+            <span id="range-within"></span>
+            <span id="section-within"></span>
+            <span id="quarter-within"></span>
+            <span id="qq-within"></span>
+          </p>
+          <p id="verbal-desc"></p>
+          <p id="nearby"></p>
+        </span>
       </div>
     </div>
 
-
     <script>
-      // Set initial map view
-      const map = L.map('map').setView([45,-90], 7);
-      map.createPane("backgroundPane").style.zIndex = 100;
-      map.createPane("foregroundPane").style.zIndex = 200;
-      
-      // OSM Basemap
-      var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        pane:'backgroundPane'
-      }).addTo(map);
-
-      map.addLayer(osm);
-
-      // Google Satellite Basemap
-      var google = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
-          maxZoom: 20,
-          subdomains:['mt0','mt1','mt2','mt3'],
-          pane:'backgroundPane'
+      $("#header").addHeader({
+        baseURL: "../sco-header/",
+        Title: "PLSS Locator",
+        Num_tabs: 1,
+        Tab_name1: "About",
+        Tab_link1: "assets/html/about.html",
+        altTitle: ""
       });
-
-      // Add search control
-      $(map).addSearchControl({
-        latLng: true,
-        address: true,
-        gazeteer: true,
-        county: true,
-        cityTownVillage: true,
-        twnRng: false,
-        twnRngSec: false,
-        quad: false,
-        position: 'topleft',
-        order: ["latLng", "address", "gazetteer", "county", "cityTownVillage"],
-        searchText: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8"> <path d="M3.5 0c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5c.59 0 1.17-.14 1.66-.41a1 1 0 0 0 .13.13l1 1a1.02 1.02 0 1 0 1.44-1.44l-1-1a1 1 0 0 0-.16-.13c.27-.49.44-1.06.44-1.66 0-1.93-1.57-3.5-3.5-3.5zm0 1c1.39 0 2.5 1.11 2.5 2.5 0 .66-.24 1.27-.66 1.72-.01.01-.02.02-.03.03a1 1 0 0 0-.13.13c-.44.4-1.04.63-1.69.63-1.39 0-2.5-1.11-2.5-2.5s1.11-2.5 2.5-2.5z"/> </svg>'
-      });
-
-      // Init client
-      var client = new carto.Client({
-        apiKey: 'x8vPLNqzI5hRLT6RV-922Q',
-        username: 'sco-admin'
-      });
-
-      $(document).ready(function() {
-
-        $('#basemapToggle').click(function() {
-          if(this.checked) {
-            map.removeLayer(osm);
-            map.addLayer(google);
-          } else {
-            map.removeLayer(google);
-            map.addLayer(osm);
-          }    
-        });
-      });
-
-      // Prep townships
-      const townshipsSource = new carto.source.SQL(`
-        SELECT *, 
-        CASE
-          WHEN dir=2 THEN 'W'
-            WHEN dir=4 THEN 'E'
-            ELSE NULL
-        END AS west_east
-        FROM "sco-admin".scobase_wi_plss_townships_24k
-      `);
-      const sectionsSource = new carto.source.SQL(`
-        SELECT * 
-        FROM "sco-admin".scobase_wi_plss_sections_24k
-      `);
-      const qsectionsSource = new carto.source.SQL(`
-        SELECT *,
-        CASE
-          WHEN q=1 THEN 'NE'
-            WHEN q=2 THEN 'NW'
-            WHEN q=3 THEN 'SW'
-            WHEN q=4 THEN 'SE'
-            ELSE NULL
-        END AS q_text
-        FROM "sco-admin".scobase_wi_plss_qsections_24k
-      `);
-      const qqsectionsSource = new carto.source.SQL(`
-        SELECT *, 
-        CASE
-          WHEN d=2 THEN 'W'
-            WHEN d=4 THEN 'E'
-            ELSE NULL
-        END AS dir,
-        CASE
-          WHEN q=1 THEN 'NE'
-          WHEN q=2 THEN 'NW'
-          WHEN q=3 THEN 'SW'
-          WHEN q=4 THEN 'SE'
-          ELSE NULL
-        END AS q_text,
-        CASE
-          WHEN qq=1 THEN 'NE'
-          WHEN qq=2 THEN 'NW'
-          WHEN qq=3 THEN 'SW'
-          WHEN qq=4 THEN 'SE'
-          ELSE NULL
-        END AS qq_text
-        FROM "sco-admin".scobase_wi_plss_qqsections_24k
-      `);
-
-      const townshipsStyle = new carto.style.CartoCSS(`
-        #layer {
-          polygon-fill: #162945;
-          polygon-opacity: 0;
-
-          ::outline {
-            line-width: 4;
-            line-color: #000;
-            line-opacity: 0.25;
-
-            [zoom<9] {
-              line-opacity: 0;
-            }
-          }
-
-          ::labels {
-            [zoom>=11][zoom<13] {
-              text-size: 20;
-              text-name: 'TWP '+[twp]+' N\\nRNG '+[rng]+' '+[west_east];
-              text-face-name: 'Lato Bold';
-              text-fill: #465159;
-              text-label-position-tolerance: 0;
-              text-halo-radius: 1.5;
-              text-halo-fill: #FFFFFF;
-              text-allow-overlap: true;
-              text-placement: point;
-              text-placement-type: dummy;
-            }
-          }
-        }
-      `);
-
-      const sectionsStyle = new carto.style.CartoCSS(`
-        #layer {
-          polygon-fill: #162945;
-          polygon-opacity: 0;
-          ::outline {
-            line-width: 2;
-            line-color: #000; /* dcdfe3 */
-            line-opacity: 0.25;
-
-            [zoom<13] {
-              line-opacity: 0;
-            }
-          }
-          
-          ::labels {
-            [zoom>=13] {
-              text-size: 20;
-              text-name: 'SEC\\n'+[sec];
-              text-face-name: 'Lato Bold';
-              text-fill: #465159;
-              text-label-position-tolerance: 0;
-              text-halo-radius: 1.5;
-              text-halo-fill: #FFFFFF;
-              text-allow-overlap: true;
-              text-placement: point;
-              text-placement-type: dummy;
-            }
-            [zoom>=14] {
-              text-size: 36;
-            }
-            [zoom>=15] {
-              text-size: 52;
-            }
-            [zoom>=16] {
-              text-size: 72;
-            }
-          }
-        }
-      `);
-
-      const qsectionsStyle = new carto.style.CartoCSS(`
-        #layer {
-          polygon-fill: #162945;
-          polygon-opacity: 0;
-          ::outline {
-            line-width: 1;
-            line-color: #727d85;
-            line-opacity: 0.25;
-
-            [zoom<14] {
-              line-opacity: 0;
-            }
-          }
-          
-          ::labels {
-            [zoom>=14] {
-              text-size: 20;
-              text-name: '[q_text]';
-              text-face-name: 'Lato Bold';
-              text-fill: #727d85;
-              text-label-position-tolerance: 0;
-              text-halo-radius: 1.5;
-              text-halo-fill: #FFFFFF;
-              text-allow-overlap: true;
-              text-placement: point;
-              text-placement-type: dummy;
-            }
-            [zoom>=15] {
-              text-size: 36;
-            }
-            [zoom>=16] {
-              text-size: 52;
-            }
-          }
-        }
-      `);
-
-      const qqsectionsStyle = new carto.style.CartoCSS(`
-        #layer {
-          polygon-fill: #162945;
-          polygon-opacity: 0;
-          ::outline {
-            line-width: 1;
-            line-color: #99a2a8;
-            line-opacity: 0.25;
-            line-dasharray: 8,16;
-
-            [zoom<15] {
-              line-opacity: 0;
-            }
-          }
-          
-          ::labels {
-            [zoom>=15] {
-              text-size: 20;
-              text-name: [qq_text];
-              text-face-name: 'Lato Bold';
-              text-fill: #99a2a8;
-              text-label-position-tolerance: 0;
-              text-halo-radius: 1.5;
-              text-halo-fill: #FFFFFF;
-              text-allow-overlap: true;
-              text-placement: point;
-              text-placement-type: dummy;
-            }
-            [zoom>=17] {
-              text-size: 36;
-            }
-            [zoom>=19] {
-              text-size: 52;
-            }
-          }
-        }
-      `);
-
-
-
-      const townships = new carto.layer.Layer(townshipsSource, townshipsStyle, {});
-
-      const sections = new carto.layer.Layer(sectionsSource, sectionsStyle, {});
-
-      const qsections = new carto.layer.Layer(qsectionsSource, qsectionsStyle, {});
-
-      const qqsections = new carto.layer.Layer(qqsectionsSource, qqsectionsStyle, {});
-
-      // Add qqsections layer
-      client.addLayers([qqsections],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add qsections layer
-      client.addLayers([qsections],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add sections layer
-      client.addLayers([sections],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add townships layer
-      client.addLayers([townships],{pane:'foregroundPane'});
-      client.getLeafletLayer().addTo(map);
-
-      // Add empty layer to add selected features into
-      var selectedStyle = {
-        "color": "#e8b756",
-        "fillOpacity": 0.1,
-        "weight": 4,
-        "opacity": 0.75
-        
-      };
-      var selectedFeatures = L.geoJson(null,{style: selectedStyle}).addTo(map);
-
-      // Get location from device
-      function getLocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function(position) {
-            var latlng = L.latLng(position.coords.latitude,position.coords.longitude);
-
-            get_twp_sec(latlng);
-
-            // Fly to location on map
-            map.flyTo(latlng, 15,{
-              animate: true,
-              duration: 0.5
-            });
-          });
-        } else { 
-          $('.output').text("Geolocation is not supported by this browser.");
-        }
-      }
-      
-      // Set Global Variable that will hold the marker that goes at our location when found
-      var locationMarker = null;
-
-      // Set marker icon
-      var redIcon = L.icon({
-        iconUrl: 'images/redIcon.png',
-        shadowUrl: 'images/marker-shadow.png',
-        iconAnchor: [13, 41]
-      });
-
-      // Listen for a click event on the Map element
-      map.on('click', function(e){
-        addMarker(e.latlng);
-        selectFeatures(e.latlng);
-      });
-
-      function addMarker(latlng) {
-        // remove locationMarker if on map
-        if(map.hasLayer(locationMarker)){
-          map.removeLayer(locationMarker);
-        };
-
-        locationMarker = L.marker(latlng, {icon: redIcon});
-        map.addLayer(locationMarker); 
-      }
-
-      function selectFeatures(latlng) {
-        selectedFeatures.clearLayers();
-
-        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM "sco-admin".scobase_wi_plss_townships_24k WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
-          selectedFeatures.addData(data);
-        });
-        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM "sco-admin".scobase_wi_plss_sections_24k WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
-          selectedFeatures.addData(data);
-        });
-        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT * FROM "sco-admin".scobase_wi_plss_qsections_24k WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
-          selectedFeatures.addData(data);
-        });
-        $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT *, CASE WHEN d=2 THEN 'W'WHEN d=4 THEN 'E'ELSE NULL END AS dir, CASE WHEN q=1 THEN 'NE'WHEN q=2 THEN 'NW'WHEN q=3 THEN 'SW'WHEN q=4 THEN 'SE'ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE'WHEN qq=2 THEN 'NW'WHEN qq=3 THEN 'SW'WHEN qq=4 THEN 'SE'ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k as qqsec WHERE ST_Contains(the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
-          selectedFeatures.addData(data);
-
-          var properties = data.features[0].properties
-          var dir = properties.dir.toString();
-          var twp = properties.t.toString();
-          var rng = properties.r.toString();
-          var sec = properties.s.toString();
-          var q   = properties.q_text.toString();
-          var qq  = properties.qq_text.toString();
-
-          var infoString = "Township: " + twp + "N" + 
-            "<br>Range: " + rng + dir + 
-            "<br>Section: " + sec + 
-            "<br>Quarter Section: " + q +
-            "<br>Quarter Quarter Section: " + qq;
-
-          $('.output').html(infoString)
-          $('.lat-long-output').html(latlng.lng.toPrecision(6) + `, ` + latlng.lat.toPrecision(6))
-        });
-      }
-
-      // Get the township and section from latitude and longitude
-      function get_twp_sec(latlng) {
-        addMarker(latlng);
-        selectFeatures(latlng);
-      }
-
     </script>
+
+    <script src="assets/js/main.js"></script>
 
   </body>
 </html>
