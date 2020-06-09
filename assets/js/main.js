@@ -378,7 +378,7 @@ function selectFeatures(latlng) {
     $('#verbal-desc').html(verbalDesc)
 
     // Update lat/long in widget
-    $('.lat-long-output').html(latlng.lng.toPrecision(6) + `, ` + latlng.lat.toPrecision(6))
+    $('.lat-long-output').html(latlng.lat.toPrecision(6) + `, ` + latlng.lng.toPrecision(6))
   });
 }
 
