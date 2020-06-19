@@ -396,7 +396,7 @@ function selectNearbyFeatures(latlng){
   $('#nearby').css('display','inherit');
 
   // Query quarter quarter sections to get nearby info
-  $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT NULL AS the_geom, CASE WHEN d=2 THEN 'W' WHEN d=4 THEN 'E' ELSE NULL END AS dir, t, r, s, CASE WHEN q=1 THEN 'NE' WHEN q=2 THEN 'NW' WHEN q=3 THEN 'SW' WHEN q=4 THEN 'SE' ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE' WHEN qq=2 THEN 'NW' WHEN qq=3 THEN 'SW' WHEN qq=4 THEN 'SE' ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k AS qqsections WHERE ST_DWithin( ST_Transform(qqsections.the_geom, 3070), ST_Transform(ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326), 3070), 60 ) AND NOT ST_Contains( qqsections.the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
+  $.getJSON(`https://sco-admin.carto.com/api/v2/sql?format=GEOJSON&q=SELECT NULL AS the_geom, CASE WHEN d=2 THEN 'W' WHEN d=4 THEN 'E' ELSE NULL END AS dir, t, r, s, CASE WHEN q=1 THEN 'NE' WHEN q=2 THEN 'NW' WHEN q=3 THEN 'SW' WHEN q=4 THEN 'SE' ELSE NULL END AS q_text, CASE WHEN qq=1 THEN 'NE' WHEN qq=2 THEN 'NW' WHEN qq=3 THEN 'SW' WHEN qq=4 THEN 'SE' ELSE NULL END AS qq_text FROM "sco-admin".scobase_wi_plss_qqsections_24k AS qqsections WHERE ST_DWithin( ST_Transform(qqsections.the_geom, 3070), ST_Transform(ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326), 3070), 15 ) AND NOT ST_Contains( qqsections.the_geom, ST_GeomFromText('POINT(`+latlng.lng+` `+latlng.lat+`)',4326));`, function(data) {
 
     // Exit function if there is nothing nearby
     if (data.features.length===0) {
