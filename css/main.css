@@ -60,6 +60,15 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
 #nearby {
   font-size: 0.75em;
   font-style: italic;
+  background-color: #f1f1f3;
+  padding: 1em;
+  border-radius: 3px;
+  margin-bottom: 10px;
+  display: none;
+}
+#nearby > a {
+  padding-top: 0.5em;
+  display: block;
 }
 
 /* Locate Control */
@@ -83,6 +92,13 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
   background: white url('../assets/img/info.svg') no-repeat;
 }
 
+#nearby-warning {
+  float: left;
+  padding-right: 10px;
+  font-size: 1.5em;
+  color: black;
+}
+
 /* Mobile */
 @media screen and (max-width: 600px) {
   #map {
@@ -92,7 +108,6 @@ body { background:#f2f6f9; height:100%; font-family:"Open sans", Helvetica, Aria
     top: 10px;
     width: 80%;
   }
-  .widget a {font-size: 18px;}
   #get-device-location {width: 200px}
   #info-button {
     top: 84px;
