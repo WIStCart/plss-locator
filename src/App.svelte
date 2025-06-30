@@ -139,7 +139,7 @@
       </calcite-action>
     </calcite-navigation>
     <!--Map-->
-    <arcgis-map item-id="aaf00602baf84c5f882f60425be01dd7" bind:this={mapEl} on:arcgisViewClick={handleMapClick}>
+    <arcgis-map item-id="2b520d5b0ef14d12a7eec1dfd72ce61d" bind:this={mapEl} on:arcgisViewClick={handleMapClick}>
       <arcgis-zoom position="top-left"></arcgis-zoom>
       <arcgis-home position="top-left"></arcgis-home>
       <arcgis-locate position="top-left" scale="5000"></arcgis-locate>
