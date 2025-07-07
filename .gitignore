@@ -1,3 +1,5 @@
+**/sco-components/
+
 # Logs
 logs
 *.log
@@ -12,9 +14,10 @@ dist
 dist-ssr
 *.local
 
+.vite/*
+
 # Editor directories and files
 .vscode/*
-!.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
