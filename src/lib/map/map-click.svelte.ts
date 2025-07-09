@@ -7,6 +7,8 @@ import { results, view, layers } from "../../store.svelte";
 
 
 export class Results {
+  public latitude:number|undefined = $state();
+  public longitude:number|undefined = $state();
   public township:string|undefined = $state();
   public range:string|undefined = $state();
   public rangeDirection:string|undefined = $state();
@@ -59,6 +61,11 @@ async function getPlssInfo(geometry:__esri.Point) {
 
 export async function mapClickHandler(event:__esri.ViewClickEvent) {
 
+  // Store click coordinates
+  results.latitude = event.mapPoint.latitude!;
+  results.longitude = event.mapPoint.longitude!;
+
+  // Initialize variables
   let d:number|undefined;
   let t:number|undefined;
   let r:number|undefined;

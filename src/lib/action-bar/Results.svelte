@@ -16,9 +16,10 @@
 </script>
 
 <calcite-panel heading="Results" hidden={props.hidden}>
-  {#if results.rangeDirection && results.township && results.section && results.quarterSection && results.quarterQuarterSection}
-    {`T${results.township}N R${results.range}${results.rangeDirection} S${results.section} ${results.quarterSection} ${results.quarterQuarterSection}`}
-  {/if}
+  <!-- Lat/Long -->
+  <calcite-block heading="Lat/Long" open={results.latitude&&results.longitude}>
+    {results.latitude?.toFixed(4)}, {results.longitude?.toFixed(4)}
+  </calcite-block>
 </calcite-panel>
 
 <style>
