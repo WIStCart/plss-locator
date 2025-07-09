@@ -68,10 +68,10 @@
       active={actionBarState?.search}
     ></calcite-action>
     <calcite-action 
-      text="Layers" 
-      icon="layers"
-      data-action-id="layers" 
-      active={actionBarState?.layers}
+      text="Results" 
+      icon="feature-details"
+      data-action-id="results" 
+      active={actionBarState?.results}
     ></calcite-action>
     <calcite-action 
       text="Information" 

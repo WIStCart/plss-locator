@@ -5,15 +5,15 @@
   // App Components
   import { view, searchState, actionBarState, analytics } from "../../store.svelte";
   import Search from "../sco-components/search/Search.svelte"
-  import Layers from "./Layers.svelte";
+  import Results from "./Results.svelte";
   import Info from "./info/Info.svelte";
 </script>
 
 {#if !actionBarState?.closed}
   <calcite-panel>
-    <!-- Layers -->
-    <Layers hidden={actionBarState?.activeAction!=='layers'} />
-    {#if actionBarState?.activeAction=='layers'}
+    <!-- Results -->
+    <Results hidden={actionBarState?.activeAction!=='results'} />
+    {#if actionBarState?.activeAction=='results'}
       <style>
         :root {
           --calcite-shell-panel-width: 10em;

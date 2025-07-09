@@ -57,15 +57,15 @@ class ActionBarState {
   public get closable() {  // Alias for mobile
     return this.mobile;
   }
-  public activeAction:String|undefined = $state('layers');
-  public lastActiveAction:String|undefined = $state('layers');
+  public activeAction:String|undefined = $state('results');
+  public lastActiveAction:String|undefined = $state('results');
   
   // Action active getters
   get search() {
     return this.activeAction == 'search';
   }
-  get layers() {
-    return this.activeAction == 'layers';
+  get results() {
+    return this.activeAction == 'results';
   }
   get info() {
     return this.activeAction == 'info';
