@@ -32,6 +32,9 @@ export class Layers {
 };
 export let layers = $state(new Layers());
 
+// Results
+export const results = $state(new Results());
+
 // App State
 export const appState = new AppState();
 $effect.root(()=>{

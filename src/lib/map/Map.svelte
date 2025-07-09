@@ -27,6 +27,7 @@
   // App Components
   import { config, view, actionBarState, appState, layers, analytics } from "../../store.svelte";
   import { navigationBoundary, homeViewpoint, setHome, BasemapGallery } from "../sco-components";
+  import { mapClickHandler } from './map-click.svelte.ts';
 
 
   let home:ArcgisHome;
@@ -85,7 +86,8 @@
 
     // Map click event
     $view.on("click", async (event:__esri.ViewClickEvent) => {
-      console.log("Map Clicked", event)
+      // Send event to click handler
+      mapClickHandler(event);
     });
 
     $view.when().then(()=>{
