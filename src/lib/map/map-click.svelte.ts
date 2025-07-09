@@ -39,7 +39,7 @@ const quadDir = new Map([
 ]);
 
 async function getPlssInfo(geometry:__esri.Point) {
-  console.log('need to query')
+  
   // Create query
   const query:__esri.QueryProperties = {
     geometry: geometry,
@@ -72,9 +72,6 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
   let s:number|undefined;
   let q:number|undefined;
   let qq:number|undefined;
-
-  // Clear results
-  results.clear();
 
   // Get hit test results
   const hitTestResult = await get(view).hitTest(event);
@@ -114,6 +111,9 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
 
   // Query feature layers if hit test result does not have the needed info (propbably zoomed too far out)
   if (!d||!t||!r||!s||!q||!qq) {
+    // Clear results
+    results.clear();
+
     [d,t,r,s,q,qq] = await getPlssInfo(event.mapPoint);
   }
 
@@ -122,15 +122,15 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
 
   // Store results
   results.rangeDirection = dirChar.get(d);
-  results.township = t.toString().padStart(2, '0');
-  results.range = r.toString().padStart(2, '0');
-  results.section = s.toString().padStart(2, '0');
+  results.township = t.toString();
+  results.range = r.toString();
+  results.section = s.toString();
   results.quarterSection = quadDir.get(q);
   results.quarterQuarterSection = quadDir.get(qq);
 
 
   // debug
-  console.log(`T${results.township}N R${results.range}${results.rangeDirection} S${results.section} ${results.quarterSection} ${results.quarterQuarterSection}`)
+  // console.log(`T${results.township}N R${results.range}${results.rangeDirection} S${results.section} ${results.quarterSection} ${results.quarterQuarterSection}`)
 
   
 }

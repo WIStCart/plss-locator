@@ -11,6 +11,15 @@
   // App Components
   import { results } from "../../store.svelte";
 
+  const verbose = new Map([
+    ['W','west'],
+    ['E','east'],
+    ['NW','northwest'],
+    ['NE','northeast'],
+    ['SW','southwest'],
+    ['SE','southeast']
+  ])
+
 
   let props = $props();
 </script>
@@ -20,7 +29,25 @@
   <calcite-block heading="Lat/Long" open={results.latitude&&results.longitude}>
     {results.latitude?.toFixed(4)}, {results.longitude?.toFixed(4)}
   </calcite-block>
+  <!-- PLSS -->
+  <calcite-block heading="PLSS Info" open={results.latitude&&results.longitude}>
+    {#if results.rangeDirection && results.township && results.section && results.quarterSection && results.quarterQuarterSection}
+      Township: {results.township}N<br>
+      Range: {results.range}{results.rangeDirection}<br>
+      Section: {results.section}<br>
+      Quarter Section: {results.quarterSection}<br>
+      Quarter Quarter Section: {results.quarterQuarterSection}<br>
+      <br>
+      The {verbose.get(results.quarterQuarterSection)} quarter of the {verbose.get(results.quarterSection)} quarter of Section {results.section}, Township {results.township} north, Range {results.range} {verbose.get(results.rangeDirection)}, fourth Principal Meridian.
+    {:else}
+      <calcite-loader inline scale="m"></calcite-loader>
+    {/if}
+  </calcite-block>
 </calcite-panel>
 
 <style>
+  /* calcite-loader {
+    margin-left: auto;
+    margin-right: auto;
+  } */
 </style>
