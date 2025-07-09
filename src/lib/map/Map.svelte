@@ -46,7 +46,7 @@
     $view.ui.add(expandButton, "bottom-left");
 
     // Disable popups
-    // $view.popupEnabled = false;
+    $view.popupEnabled = false;
 
     // Set navigation boundaries
     const extent = navigationBoundary($view, { maxScale:500 });
