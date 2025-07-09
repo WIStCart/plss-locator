@@ -1,15 +1,36 @@
 import { writable } from "svelte/store";
 
+import Collection from "@arcgis/core/core/Collection.js";
+
 import appConfig from "./app-config.json"
 import { type Config, GA, SearchState } from "./lib/sco-components";
 import { AppState } from "./lib/sco-components";
-
+import { Results } from "./lib/map/map-click.svelte";
 
 // Config
 export const config = $state(appConfig as Config);
 
 // View
 export const view = writable<__esri.MapView>();
+
+// Layers
+class FeatureLayers {
+  townships:__esri.FeatureLayer|undefined;
+  sections:__esri.FeatureLayer|undefined;
+  quarterSections:__esri.FeatureLayer|undefined;
+  quarterQuarterSections:__esri.FeatureLayer|undefined;
+}
+class FeatureLayerViews {
+  townships:__esri.FeatureLayerView|undefined;
+  sections:__esri.FeatureLayerView|undefined;
+  quarterSections:__esri.FeatureLayerView|undefined;
+  quarterQuarterSections:__esri.FeatureLayerView|undefined;
+}
+export class Layers {
+  featureLayers = $state(new FeatureLayers());
+  featureLayerViews = $state(new FeatureLayerViews());
+};
+export let layers = $state(new Layers());
 
 // App State
 export const appState = new AppState();

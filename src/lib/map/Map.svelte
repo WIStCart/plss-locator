@@ -25,7 +25,7 @@
   import { Button } from '@esri/calcite-components/components/calcite-button';
 
   // App Components
-  import { config, view, actionBarState, appState, analytics } from "../../store.svelte";
+  import { config, view, actionBarState, appState, layers, analytics } from "../../store.svelte";
   import { navigationBoundary, homeViewpoint, setHome, BasemapGallery } from "../sco-components";
 
 
@@ -94,7 +94,39 @@
       appState.viewpointWatchHandler($view);
 
     });
-   
+    
+    // Ensure map is not null
+    if ($view.map==null) { 
+      throw("map is null");
+    }
+
+    // Layers
+    $view.map.allLayers.forEach((layer) => {
+      const featureLayer = layer as __esri.FeatureLayer;
+      switch (featureLayer.customParameters?.layer) {
+        case "twp":
+          featureLayer.outFields = ['dir','twp','rng'];
+          layers.featureLayers.townships = featureLayer;
+          layers.featureLayerViews.townships = $view.whenLayerView(featureLayer);
+          break;
+        case "sec":
+          featureLayer.outFields = ['sec'];
+          layers.featureLayers.sections = featureLayer;
+          layers.featureLayerViews.sections = $view.whenLayerView(featureLayer);
+          break;
+        case "qsec":
+          featureLayer.outFields = ['q'];
+          layers.featureLayers.quarterSections = featureLayer;
+          layers.featureLayerViews.quarterSections = $view.whenLayerView(featureLayer);
+          break;
+        case "qqsec":
+          featureLayer.outFields = ['qq'];
+          layers.featureLayers.quarterQuarterSections = featureLayer;
+          layers.featureLayerViews.quarterQuarterSections = $view.whenLayerView(featureLayer);
+          break;
+      }
+    });
+    
     mapLoading = false;
   }
 
