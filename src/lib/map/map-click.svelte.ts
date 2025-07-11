@@ -1,6 +1,9 @@
 import { get } from "svelte/store";
 
 // ArcGIS Core
+import Collection from "@arcgis/core/core/Collection";
+import Graphic from "@arcgis/core/Graphic";
+import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
 
 // App Components
 import { results, view, layers } from "../../store.svelte";
@@ -38,24 +41,33 @@ const quadDir = new Map([
   [4,'SE']
 ]);
 
-async function getPlssInfo(geometry:__esri.Point) {
+const featureSymbology = new SimpleFillSymbol({
+  color: [240, 140, 25, 0.15],
+  outline: {
+    color: "orange",
+    width: 2
+  }
+});
+
+async function queryLayer(queryGeometry:__esri.Point, featureLayer:__esri.FeatureLayer, fields:string[]) {
   
   // Create query
   const query:__esri.QueryProperties = {
-    geometry: geometry,
-    outFields: ['d','t','r','s','q','qq']
+    geometry: queryGeometry,
+    outFields: fields,
+    returnGeometry: true
   }
 
   // Run query
-  const queryResult = await layers.featureLayers.quarterQuarterSections!.queryFeatures(query);
+  const queryResult = await featureLayer.queryFeatures(query);
 
   // Check if more that one feature is returned
-  if (queryResult.features.length > 1) console.log(queryResult.features.length, "features returned");
+  if (queryResult.features.length > 1) throw(queryResult.features.length, "features returned!");
   
   // Get first feature
   const feature = queryResult.features[0];
 
-  return [feature.attributes['d'],feature.attributes['t'],feature.attributes['r'],feature.attributes['s'],feature.attributes['q'],feature.attributes['qq']]
+  return feature
 }
 
 
@@ -65,36 +77,39 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
   results.latitude = event.mapPoint.latitude!;
   results.longitude = event.mapPoint.longitude!;
 
-  // Initialize variables
-  let d:number|undefined;
-  let t:number|undefined;
-  let r:number|undefined;
-  let s:number|undefined;
-  let q:number|undefined;
-  let qq:number|undefined;
+  // Clear graphics
+  get(view).graphics.removeAll();
 
-  // Query feature layers if hit test result does not have the needed info (propbably zoomed too far out)
-  if (!d||!t||!r||!s||!q||!qq) {
-    // Clear results
-    results.clear();
+  // Clear results
+  results.clear();
 
-    [d,t,r,s,q,qq] = await getPlssInfo(event.mapPoint);
-  }
+  // For each feature layer
+  Object.values(layers.featureLayers).forEach(async (featureLayer) => {
+    let feature!:__esri.Graphic;
 
-  // Check if there is still and undefined value; there shouldn't be
-  if (!d||!t||!r||!s||!q||!qq) { throw("Something when wrong. A PLSS value wasn't found.")}
+    // Query the layer
+    switch (featureLayer.customParameters?.layer) {
+      case "qqsec":
+        // Get feature
+        feature = await queryLayer(event.mapPoint, featureLayer, ['d','t','r','s','q','qq']);
 
-  // Store results
-  results.rangeDirection = dirChar.get(d);
-  results.township = t.toString();
-  results.range = r.toString();
-  results.section = s.toString();
-  results.quarterSection = quadDir.get(q);
-  results.quarterQuarterSection = quadDir.get(qq);
+        // Store PLSS info
+        results.rangeDirection = dirChar.get(feature.attributes['d']);
+        results.township = feature.attributes['t'].toString();
+        results.range = feature.attributes['r'].toString();
+        results.section = feature.attributes['s'].toString();
+        results.quarterSection = quadDir.get(feature.attributes['q']);
+        results.quarterQuarterSection = quadDir.get(feature.attributes['qq']);
 
+        break;
 
-  // debug
-  // console.log(`T${results.township}N R${results.range}${results.rangeDirection} S${results.section} ${results.quarterSection} ${results.quarterQuarterSection}`)
+      default:
+        feature = await queryLayer(event.mapPoint, featureLayer, []);
+    }
 
-  
+    // Add feature to graphics
+    feature.symbol = featureSymbology;
+    get(view).graphics.add(feature);
+  });
+
 }
