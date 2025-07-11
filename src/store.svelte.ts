@@ -1,7 +1,5 @@
 import { writable } from "svelte/store";
 
-import Collection from "@arcgis/core/core/Collection.js";
-
 import appConfig from "./app-config.json"
 import { type Config, GA, SearchState } from "./lib/sco-components";
 import { AppState } from "./lib/sco-components";
