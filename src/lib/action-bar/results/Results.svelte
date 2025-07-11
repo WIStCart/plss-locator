@@ -31,14 +31,14 @@
     <NoResultsMessage />
   {:else}
     <!-- Lat/Long -->
-    <calcite-block heading="Lat/Long" open={results.latitude&&results.longitude}>
+    <calcite-block heading="Lat/Long" expanded>
       <calcite-notice open>
         <div slot="message">{results.latitude?.toFixed(4)}, {results.longitude?.toFixed(4)}</div>
       </calcite-notice>
       
     </calcite-block>
     <!-- PLSS -->
-    <calcite-block heading="PLSS Info" open={results.latitude&&results.longitude}>
+    <calcite-block heading="PLSS Info" expanded>
       {#if results.rangeDirection && results.township && results.section && results.quarterSection && results.quarterQuarterSection}
         <calcite-notice open>
           <div slot="message">
