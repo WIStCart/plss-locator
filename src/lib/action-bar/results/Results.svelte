@@ -11,6 +11,7 @@
 
   // App Components
   import { results } from "../../../store.svelte";
+  import NoResultsMessage from "./NoResultsMessage.svelte";
 
   const verbose = new Map([
     ['W','west'],
@@ -26,34 +27,38 @@
 </script>
 
 <calcite-panel heading="Results" hidden={props.hidden}>
-  <!-- Lat/Long -->
-  <calcite-block heading="Lat/Long" open={results.latitude&&results.longitude}>
-    <calcite-notice open>
-      <div slot="message">{results.latitude?.toFixed(4)}, {results.longitude?.toFixed(4)}</div>
-    </calcite-notice>
-    
-  </calcite-block>
-  <!-- PLSS -->
-  <calcite-block heading="PLSS Info" open={results.latitude&&results.longitude}>
-    {#if results.rangeDirection && results.township && results.section && results.quarterSection && results.quarterQuarterSection}
+  {#if results.latitude==undefined}
+    <NoResultsMessage />
+  {:else}
+    <!-- Lat/Long -->
+    <calcite-block heading="Lat/Long" open={results.latitude&&results.longitude}>
       <calcite-notice open>
-        <div slot="message">
-          Township: {results.township}N<br>
-          Range: {results.range}{results.rangeDirection}<br>
-          Section: {results.section}<br>
-          Quarter Section: {results.quarterSection}<br>
-          Quarter Quarter Section: {results.quarterQuarterSection}<br>
-        </div>
+        <div slot="message">{results.latitude?.toFixed(4)}, {results.longitude?.toFixed(4)}</div>
       </calcite-notice>
-      <calcite-notice open>
-        <div slot="message">
-          The {verbose.get(results.quarterQuarterSection)} quarter of the {verbose.get(results.quarterSection)} quarter of Section {results.section}, Township {results.township} north, Range {results.range} {verbose.get(results.rangeDirection)}, fourth Principal Meridian.
-        </div>
-      </calcite-notice>
-    {:else}
-      <calcite-loader inline scale="m"></calcite-loader>
-    {/if}
-  </calcite-block>
+      
+    </calcite-block>
+    <!-- PLSS -->
+    <calcite-block heading="PLSS Info" open={results.latitude&&results.longitude}>
+      {#if results.rangeDirection && results.township && results.section && results.quarterSection && results.quarterQuarterSection}
+        <calcite-notice open>
+          <div slot="message">
+            Township: {results.township}N<br>
+            Range: {results.range}{results.rangeDirection}<br>
+            Section: {results.section}<br>
+            Quarter Section: {results.quarterSection}<br>
+            Quarter Quarter Section: {results.quarterQuarterSection}<br>
+          </div>
+        </calcite-notice>
+        <calcite-notice open>
+          <div slot="message">
+            The {verbose.get(results.quarterQuarterSection)} quarter of the {verbose.get(results.quarterSection)} quarter of Section {results.section}, Township {results.township} north, Range {results.range} {verbose.get(results.rangeDirection)}, fourth Principal Meridian.
+          </div>
+        </calcite-notice>
+      {:else}
+        <calcite-loader inline scale="m"></calcite-loader>
+      {/if}
+    </calcite-block>
+  {/if}
 </calcite-panel>
 
 <style>
