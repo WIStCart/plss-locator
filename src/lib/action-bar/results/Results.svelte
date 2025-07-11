@@ -10,7 +10,7 @@
   import "@esri/calcite-components/components/calcite-action";
 
   // App Components
-  import { results } from "../../store.svelte";
+  import { results } from "../../../store.svelte";
 
   const verbose = new Map([
     ['W','west'],

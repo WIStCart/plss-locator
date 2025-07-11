@@ -5,7 +5,7 @@
   // App Components
   import { view, searchState, actionBarState, analytics } from "../../store.svelte";
   import Search from "../sco-components/search/Search.svelte"
-  import Results from "./Results.svelte";
+  import Results from "./results/Results.svelte";
   import Info from "./info/Info.svelte";
 </script>
 
