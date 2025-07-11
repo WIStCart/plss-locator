@@ -4,14 +4,17 @@ import { get } from "svelte/store";
 import Collection from "@arcgis/core/core/Collection";
 import Graphic from "@arcgis/core/Graphic";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
+import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
 
 // App Components
 import { results, view, layers } from "../../store.svelte";
+import { clickMarkerSymbol } from "../sco-components";
 
 
 export class Results {
   public latitude:number|undefined = $state();
   public longitude:number|undefined = $state();
+  public layer:GraphicsLayer = new GraphicsLayer();
   public township:string|undefined = $state();
   public range:string|undefined = $state();
   public rangeDirection:string|undefined = $state();
@@ -72,13 +75,29 @@ async function queryLayer(queryGeometry:__esri.Point, featureLayer:__esri.Featur
 
 
 export async function mapClickHandler(event:__esri.ViewClickEvent) {
+  // Zoom in more if very zoomed out
+  if (get(view).zoom<12) {
+    // Zoom to level where points are visible
+    get(view).goTo({
+      center: event.mapPoint,
+      zoom: 12
+    })
+  }
+
+  // Clear graphics
+  results.layer.removeAll();
+  get(view).graphics.removeAll();
 
   // Store click coordinates
   results.latitude = event.mapPoint.latitude!;
   results.longitude = event.mapPoint.longitude!;
 
-  // Clear graphics
-  get(view).graphics.removeAll();
+  // Add marker to map at click location
+  const clickMarker = new Graphic({
+    geometry: event.mapPoint,
+    symbol: clickMarkerSymbol
+  })
+  get(view).graphics.add(clickMarker);
 
   // Clear results
   results.clear();
@@ -109,7 +128,7 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
 
     // Add feature to graphics
     feature.symbol = featureSymbology;
-    get(view).graphics.add(feature);
+    results.layer.add(feature);
   });
 
 }

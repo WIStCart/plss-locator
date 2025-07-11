@@ -25,7 +25,7 @@
   import { Button } from '@esri/calcite-components/components/calcite-button';
 
   // App Components
-  import { config, view, actionBarState, appState, layers, analytics } from "../../store.svelte";
+  import { config, view, actionBarState, appState, layers, analytics, results } from "../../store.svelte";
   import { navigationBoundary, homeViewpoint, setHome, BasemapGallery } from "../sco-components";
   import { mapClickHandler } from './map-click.svelte.ts';
 
@@ -129,6 +129,9 @@
       }
     });
     
+    // Add results layer to map
+    $view.map.add(results.layer);
+
     mapLoading = false;
   }
 
