@@ -73,42 +73,6 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
   let q:number|undefined;
   let qq:number|undefined;
 
-  // Get hit test results
-  const hitTestResult = await get(view).hitTest(event);
-
-  // First try to get PLSS info from hit test
-  if (hitTestResult.results.length > 0) {
-
-    // Get graphic hits
-    const graphicHits = hitTestResult.results?.filter(hitResult => hitResult.type === "graphic" && hitResult.graphic.layer).map(graphicHit => graphicHit as __esri.GraphicHit);
-
-    // If there are hits returned
-    if (graphicHits?.length) {
-    }
-
-    // For each returned graphic
-    graphicHits.forEach((graphicHit:__esri.GraphicHit) =>{
-      const attributes = graphicHit.graphic.attributes;
-      const featureLayer = graphicHit.layer as __esri.FeatureLayer;
-      switch (featureLayer.customParameters?.layer) {
-        case "twp":
-          t = attributes['twp'];
-          r = attributes['rng'];
-          d = attributes['dir'];
-          break;
-        case "sec":
-          s = attributes['sec'];
-          break;
-        case "qsec":
-          q = attributes['q'];
-          break;
-        case "qqsec":
-          qq = attributes['qq'];
-          break;
-      }
-    });
-  } 
-
   // Query feature layers if hit test result does not have the needed info (propbably zoomed too far out)
   if (!d||!t||!r||!s||!q||!qq) {
     // Clear results
