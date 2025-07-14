@@ -8,6 +8,7 @@
   import "@esri/calcite-components/components/calcite-list";
   import "@esri/calcite-components/components/calcite-list-item";
   import "@esri/calcite-components/components/calcite-action";
+  import "@esri/calcite-components/components/calcite-tooltip";
 
   // App Components
   import { results } from "../../../store.svelte";
@@ -22,11 +23,20 @@
     ['SE','southeast']
   ])
 
+  let clearSelectionDisabled = false;
 
   let props = $props();
 </script>
 
 <calcite-panel heading="Results" hidden={props.hidden}>
+
+  <!-- Clear Selection Button -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <calcite-action icon="clear-selection" text="clear selection" slot="header-actions-end" onclick={()=>{results.clearAll()}} disabled={clearSelectionDisabled || null}>
+    <calcite-tooltip slot="tooltip" placement="bottom"><span>Clear Selection</span></calcite-tooltip>
+  </calcite-action>
+
   {#if results.latitude==undefined}
     <NoResultsMessage />
   {:else}

@@ -23,12 +23,29 @@ export class Results {
   public quarterQuarterSection:string|undefined = $state();
 
   clear() {
+    // Feature graphics
+    this.layer.removeAll();
+
+    // Marker
+    get(view).graphics.removeAll();
+
+
+    // PLSS Info
     this.township = undefined;
     this.range = undefined;
     this.rangeDirection = undefined;
     this.section = undefined;
     this.quarterSection = undefined;
     this.quarterQuarterSection = undefined;
+  }
+
+  clearAll() {
+    // Coordinate
+    this.latitude = undefined;
+    this.longitude = undefined;
+
+    // Everything else
+    this.clear();
   }
 }
 
@@ -83,10 +100,6 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
       zoom: 12
     })
   }
-
-  // Clear graphics
-  results.layer.removeAll();
-  get(view).graphics.removeAll();
 
   // Store click coordinates
   results.latitude = event.mapPoint.latitude!;
