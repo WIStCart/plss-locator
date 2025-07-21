@@ -14,7 +14,6 @@
   // App Components
   import { results } from "../../../store.svelte";
   import NoResultsMessage from "./NoResultsMessage.svelte";
-    import { NavigationUser } from "@esri/calcite-components/components/calcite-navigation-user";
 
   const verbose = new Map([
     ['W','west'],
