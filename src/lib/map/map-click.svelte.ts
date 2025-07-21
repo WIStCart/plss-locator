@@ -7,7 +7,7 @@ import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
 
 // App Components
-import { results, view, layers } from "../../store.svelte";
+import { results, view, layers, actionBarState } from "../../store.svelte";
 import { clickMarkerSymbol } from "../sco-components";
 
 
@@ -92,6 +92,11 @@ async function queryLayer(queryGeometry:__esri.Point, featureLayer:__esri.Featur
 
 
 export async function mapClickHandler(event:__esri.ViewClickEvent) {
+  // Open results panel if not open already
+  if (actionBarState.activeAction!='results') {
+    actionBarState.activeAction='results';
+  }
+
   // Zoom in more if very zoomed out
   if (get(view).zoom<12) {
     // Zoom to level where points are visible

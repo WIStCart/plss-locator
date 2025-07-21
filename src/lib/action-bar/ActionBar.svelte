@@ -55,12 +55,15 @@
     }
     
   };
+
+
+  let {...restProps} = $props();
 </script>
 
-<calcite-shell-panel {...$$restProps}>
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions-->
-  <calcite-action-bar slot="action-bar" on:click={handleActionBarClick} expand-disabled={actionBarState.closable}>
+<calcite-shell-panel {...restProps}>
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <calcite-action-bar slot="action-bar" onclick={handleActionBarClick} expand-disabled={actionBarState.closable}>
     <calcite-action 
       text="Search" 
       icon="search"
