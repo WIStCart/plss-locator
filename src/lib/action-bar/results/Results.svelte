@@ -14,6 +14,7 @@
   // App Components
   import { results } from "../../../store.svelte";
   import NoResultsMessage from "./NoResultsMessage.svelte";
+  import NearbyInfo from "./NearbyInfo.svelte";
 
   const verbose = new Map([
     ['W','west'],
@@ -27,6 +28,7 @@
   let clearSelectionDisabled = false;
 
   let props = $props();
+  let nearbyInfo:HTMLElement;
 </script>
 
 <calcite-panel heading="Results" hidden={props.hidden}>
@@ -82,7 +84,9 @@
                 {feature}<br>
               {/each}
             </div>
-            <calcite-link slot="link" title="More Info">
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <calcite-link slot="link" title="More Info" onclick={()=>{document.getElementById("nearby-info")!.open=true}}>
                 More info
             </calcite-link>
           </calcite-notice>
@@ -95,6 +99,9 @@
       {/if}
     </calcite-block>
   {/if}
+  
+  <!-- Nearby Info Dialog -->
+  <NearbyInfo />
 </calcite-panel>
 
 <style>
