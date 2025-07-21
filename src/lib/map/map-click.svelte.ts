@@ -29,7 +29,6 @@ export class Results {
     // Marker
     get(view).graphics.removeAll();
 
-
     // PLSS Info
     this.township = undefined;
     this.range = undefined;
@@ -110,15 +109,15 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
   results.latitude = event.mapPoint.latitude!;
   results.longitude = event.mapPoint.longitude!;
 
+  // Clear results
+  results.clear();
+
   // Add marker to map at click location
   const clickMarker = new Graphic({
     geometry: event.mapPoint,
     symbol: clickMarkerSymbol
   })
   get(view).graphics.add(clickMarker);
-
-  // Clear results
-  results.clear();
 
   // For each feature layer
   Object.values(layers.featureLayers).forEach(async (featureLayer) => {
