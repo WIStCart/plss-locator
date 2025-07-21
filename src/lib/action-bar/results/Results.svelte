@@ -9,10 +9,12 @@
   import "@esri/calcite-components/components/calcite-list-item";
   import "@esri/calcite-components/components/calcite-action";
   import "@esri/calcite-components/components/calcite-tooltip";
+  import "@esri/calcite-components/components/calcite-link";
 
   // App Components
   import { results } from "../../../store.svelte";
   import NoResultsMessage from "./NoResultsMessage.svelte";
+    import { NavigationUser } from "@esri/calcite-components/components/calcite-navigation-user";
 
   const verbose = new Map([
     ['W','west'],
@@ -49,6 +51,8 @@
     </calcite-block>
     <!-- PLSS -->
     <calcite-block heading="PLSS Info" expanded>
+
+      <!-- Main -->
       {#if results.rangeDirection && results.township && results.section && results.quarterSection && results.quarterQuarterSection}
         <calcite-notice open>
           <div slot="message">
@@ -65,6 +69,29 @@
           </div>
         </calcite-notice>
       {:else}
+        <calcite-loader inline scale="m"></calcite-loader>
+      {/if}
+
+      <!-- Nearby -->
+      {#if results.nearby.length>1}
+        <br>
+        <i>
+          <calcite-notice kind="info" icon="exclamation-mark-circle" scale="s" open>
+            <div slot="message">
+              The clicked point may be in:<br>
+              {#each results.nearby.slice(1) as feature}
+                {feature}<br>
+              {/each}
+            </div>
+            <calcite-link slot="link" title="More Info">
+                More info
+            </calcite-link>
+          </calcite-notice>
+        </i>
+      {:else if results.nearby.length>0}
+        <!-- If the query is complete but there are no nearby features -->
+      {:else}
+        <br>
         <calcite-loader inline scale="m"></calcite-loader>
       {/if}
     </calcite-block>

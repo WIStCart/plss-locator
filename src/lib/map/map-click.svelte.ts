@@ -1,7 +1,6 @@
 import { get } from "svelte/store";
 
 // ArcGIS Core
-import Collection from "@arcgis/core/core/Collection";
 import Graphic from "@arcgis/core/Graphic";
 import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
@@ -21,6 +20,7 @@ export class Results {
   public section:string|undefined = $state();
   public quarterSection:string|undefined = $state();
   public quarterQuarterSection:string|undefined = $state();
+  public nearby:string[] = $state([]);
 
   clear() {
     // Feature graphics
@@ -36,6 +36,7 @@ export class Results {
     this.section = undefined;
     this.quarterSection = undefined;
     this.quarterQuarterSection = undefined;
+    this.nearby = [];
   }
 
   clearAll() {
@@ -68,7 +69,7 @@ const featureSymbology = new SimpleFillSymbol({
   }
 });
 
-async function queryLayer(queryGeometry:__esri.Point, featureLayer:__esri.FeatureLayer, fields:string[]) {
+async function queryLayer(queryGeometry:__esri.Point, featureLayer:__esri.FeatureLayer, fields:string[], nearby=false) {
   
   // Create query
   const query:__esri.QueryProperties = {
@@ -77,16 +78,22 @@ async function queryLayer(queryGeometry:__esri.Point, featureLayer:__esri.Featur
     returnGeometry: true
   }
 
+  // Add distance if querying for nearby
+  if (nearby) query.distance = 15;
+
   // Run query
   const queryResult = await featureLayer.queryFeatures(query);
 
   // Check if more that one feature is returned
-  if (queryResult.features.length > 1) throw(queryResult.features.length, "features returned!");
+  if (queryResult.features.length > 1 && !nearby) throw(queryResult.features.length, "features returned!");
   
-  // Get first feature
-  const feature = queryResult.features[0];
-
-  return feature
+  if (nearby) {
+    // If searching nearby, return all features
+    return queryResult.features;
+  } else {
+    // Else only return clicked feature
+    return queryResult.features[0];
+  }
 }
 
 
@@ -116,7 +123,7 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
   const clickMarker = new Graphic({
     geometry: event.mapPoint,
     symbol: clickMarkerSymbol
-  })
+  });
   get(view).graphics.add(clickMarker);
 
   // For each feature layer
@@ -127,7 +134,7 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
     switch (featureLayer.customParameters?.layer) {
       case "qqsec":
         // Get feature
-        feature = await queryLayer(event.mapPoint, featureLayer, ['d','t','r','s','q','qq']);
+        feature = await queryLayer(event.mapPoint, featureLayer, ['d','t','r','s','q','qq']) as Graphic;
 
         // Store PLSS info
         results.rangeDirection = dirChar.get(feature.attributes['d']);
@@ -140,12 +147,22 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
         break;
 
       default:
-        feature = await queryLayer(event.mapPoint, featureLayer, []);
+        feature = await queryLayer(event.mapPoint, featureLayer, []) as Graphic;
     }
 
     // Add feature to graphics
     feature.symbol = featureSymbology;
     results.layer.add(feature);
+  });
+
+  // Nearby search
+  const features = await queryLayer(event.mapPoint, layers.featureLayers.quarterQuarterSections!, ['d','t','r','s','q','qq'], true) as Graphic[];
+  features.forEach((feature)=>{
+    // Build PLSS string
+    const plssString = `T${feature.attributes['t'].toString()}N R${feature.attributes['r'].toString()}${dirChar.get(feature.attributes['d'])} S${feature.attributes['s'].toString()} ${quadDir.get(feature.attributes['q'])} ${quadDir.get(feature.attributes['qq'])}`;
+    
+    // Push string to list of nearby features
+    results.nearby.push(plssString);
   });
 
 }
