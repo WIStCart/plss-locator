@@ -3,6 +3,8 @@
 
   // Calcite Components
   import "@esri/calcite-components/components/calcite-panel";
+  import "@esri/calcite-components/components/calcite-block";
+  import "@esri/calcite-components/components/calcite-block-section";
   import "@esri/calcite-components/components/calcite-loader";
   import "@esri/calcite-components/components/calcite-notice";
   import "@esri/calcite-components/components/calcite-list";
@@ -43,15 +45,16 @@
   {#if results.latitude==undefined}
     <NoResultsMessage />
   {:else}
+  <calcite-block expanded>
     <!-- Lat/Long -->
-    <calcite-block heading="Lat/Long" expanded>
+    <calcite-block-section text="Lat/Long" expanded>
       <calcite-notice open>
         <div slot="message">{results.latitude?.toFixed(4)}, {results.longitude?.toFixed(4)}</div>
       </calcite-notice>
       
-    </calcite-block>
+    </calcite-block-section>
     <!-- PLSS -->
-    <calcite-block heading="PLSS Info" expanded>
+    <calcite-block-section text="PLSS Info" expanded>
 
       <!-- Main -->
       {#if results.rangeDirection && results.township && results.section && results.quarterSection && results.quarterQuarterSection}
@@ -97,7 +100,8 @@
         <br>
         <calcite-loader inline scale="m"></calcite-loader>
       {/if}
-    </calcite-block>
+    </calcite-block-section>
+  </calcite-block>
   {/if}
   
   <!-- Nearby Info Dialog -->
@@ -109,4 +113,8 @@
     margin-left: auto;
     margin-right: auto;
   } */
+  calcite-block {
+    margin: 0;
+    min-height: 100%;
+  }
 </style>
