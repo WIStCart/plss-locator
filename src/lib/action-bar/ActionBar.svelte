@@ -57,7 +57,7 @@
   };
 
 
-  let {...restProps} = $props();
+  let { children, ...restProps } = $props();
 </script>
 
 <calcite-shell-panel {...restProps}>
@@ -83,6 +83,7 @@
       active={actionBarState?.info}
     ></calcite-action>
   </calcite-action-bar>
+  {@render children?.()}
 </calcite-shell-panel>
 
 <style>
