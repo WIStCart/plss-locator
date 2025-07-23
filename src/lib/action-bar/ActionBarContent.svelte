@@ -40,7 +40,4 @@
 {/if}
 
 <style>
-  calcite-panel {
-    padding-right: 10px;
-  }
 </style>

@@ -28,11 +28,13 @@
 
     <!-- Desktop View -->
     <calcite-shell-panel slot="panel-start" width-scale="l" resizable class="calcite-mode-dark" bind:clientWidth={config.interface.panelWidth}>
-      <calcite-shell>
-        <Navigation slot="header" />
-        <ActionBar slot="panel-start" collapsed />
-        <ActionBarContent />
-      </calcite-shell>
+      <calcite-panel>
+        <calcite-shell>
+          <Navigation slot="header" />
+          <ActionBar slot="panel-start" collapsed />
+          <ActionBarContent />
+        </calcite-shell>
+      </calcite-panel>
     </calcite-shell-panel>
     
   {/if}
