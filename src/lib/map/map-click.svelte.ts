@@ -10,7 +10,14 @@ import { results, view, layers, actionBarState } from "../../store.svelte";
 import { clickMarkerSymbol } from "../sco-components";
 
 
+class Loading {
+  public latLon = $state(false);
+  public plss = $state(false);
+  public nearby = $state(false);
+};
+
 export class Results {
+  public loading:Loading = new Loading();
   public latitude:number|undefined = $state();
   public longitude:number|undefined = $state();
   public layer:GraphicsLayer = new GraphicsLayer();
