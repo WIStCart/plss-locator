@@ -3,9 +3,6 @@
     "full": "Wisconsin PLSS Locator",
     "short": "PLSS Locator"
   },
-  "info": {
-    "helpLink": "https://sco.wisc.edu"
-  },
   "mapPortalId": "2b520d5b0ef14d12a7eec1dfd72ce61d",
   "oauthAppId": "",
   "gaMeasurementId": "",

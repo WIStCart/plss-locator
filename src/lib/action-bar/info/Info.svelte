@@ -17,7 +17,7 @@
   import { config, analytics } from "../../../store.svelte";
 
 
-  const helpURL = config.info.helpLink;
+  // const helpURL = config.info.helpLink;
   const contactURL = `mailto:help@sco.wisc.edu?subject=${encodeURIComponent(config.appName.full)}`;
 
   let flow:Flow;
@@ -55,10 +55,10 @@
 
   onMount(()=>{
     // Add link to help list item
-    help.onclick = ()=> {
-        window.open(helpURL, '_blank')?.focus();
-        analytics.send("Help Clicked", "User clicked on the help button in info panel.", "Info", {action: "help"});
-    }
+    // help.onclick = ()=> {
+    //     window.open(helpURL, '_blank')?.focus();
+    //     analytics.send("Help Clicked", "User clicked on the help button in info panel.", "Info", {action: "help"});
+    // }
 
     // Contact
     contact.onclick = ()=> {
@@ -74,7 +74,7 @@
   <calcite-flow-item bind:this={infoFlowItem} heading="Information">
     <About />
     <calcite-list>
-      <calcite-list-item bind:this={help} label="Help" description="Go to help document"></calcite-list-item>
+      <!-- <calcite-list-item bind:this={help} label="Help" description="Go to help document"></calcite-list-item> -->
       <calcite-list-item bind:this={contact} label="Contact" description="Reach out to us with a question or feedback"></calcite-list-item>
     </calcite-list>
   </calcite-flow-item>
