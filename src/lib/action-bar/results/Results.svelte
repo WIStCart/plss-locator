@@ -42,7 +42,7 @@
     <calcite-tooltip slot="tooltip" placement="bottom"><span>Clear Selection</span></calcite-tooltip>
   </calcite-action>
 
-  {#if results.latitude==undefined}
+  {#if results.state=="cleared"}
     <NoResultsMessage />
   {:else}
   <calcite-block expanded>
@@ -55,6 +55,15 @@
     </calcite-block-section>
     <!-- PLSS -->
     <calcite-block-section text="PLSS Info" expanded>
+
+      <!-- No results warning -->
+      <calcite-notice kind="warning" open={results.state=="error"}>
+        <div slot="title">No Results</div>
+        <div slot="message">
+          <p>The location you clicked returned no results.</p>
+          <p>This is likely because the point is outside the state of Wisconsin.</p>
+        </div>
+      </calcite-notice>
 
       <!-- Main -->
       {#if results.rangeDirection && results.township && results.section && results.quarterSection && results.quarterQuarterSection}
@@ -72,7 +81,7 @@
             The {verbose.get(results.quarterQuarterSection)} quarter of the {verbose.get(results.quarterSection)} quarter of Section {results.section}, Township {results.township} north, Range {results.range} {verbose.get(results.rangeDirection)}, fourth Principal Meridian.
           </div>
         </calcite-notice>
-      {:else}
+      {:else if results.state!="error"}
         <calcite-loader inline scale="m"></calcite-loader>
       {/if}
 
@@ -94,7 +103,7 @@
             </calcite-link>
           </calcite-notice>
         </i>
-      {:else if results.nearby.length>0}
+      {:else if results.state=="error" || results.nearby.length>0}
         <!-- If the query is complete but there are no nearby features -->
       {:else}
         <br>

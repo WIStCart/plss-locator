@@ -10,14 +10,15 @@ import { results, view, layers, actionBarState } from "../../store.svelte";
 import { clickMarkerSymbol } from "../sco-components";
 
 
-class Loading {
-  public latLon = $state(false);
-  public plss = $state(false);
-  public nearby = $state(false);
-};
+export enum ResultsState {
+  Cleared = "cleared",
+  Loading = "loading",
+  Loaded = "loaded",
+  Error = "error"
+}
 
 export class Results {
-  public loading:Loading = new Loading();
+  public state:ResultsState = $state(ResultsState.Cleared);
   public latitude:number|undefined = $state();
   public longitude:number|undefined = $state();
   public layer:GraphicsLayer = new GraphicsLayer();
@@ -53,6 +54,9 @@ export class Results {
 
     // Everything else
     this.clear();
+
+    // Set state
+    this.state = ResultsState.Cleared;
   }
 }
 
@@ -122,6 +126,9 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
   results.latitude = event.mapPoint.latitude!;
   results.longitude = event.mapPoint.longitude!;
 
+  // Set results state to loading
+  results.state = ResultsState.Loading;
+
   // Clear results
   results.clear();
 
@@ -137,28 +144,39 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
     let feature!:__esri.Graphic;
 
     // Query the layer
-    switch (featureLayer.customParameters?.layer) {
-      case "qqsec":
-        // Get feature
-        feature = await queryLayer(event.mapPoint, featureLayer, ['d','t','r','s','q','qq']) as Graphic;
+    try {
+      switch (featureLayer.customParameters?.layer) {
+        case "qqsec":
+          // Get feature
+          feature = await queryLayer(event.mapPoint, featureLayer, ['d','t','r','s','q','qq']) as Graphic;
 
-        // Store PLSS info
-        results.rangeDirection = dirChar.get(feature.attributes['d']);
-        results.township = feature.attributes['t'].toString();
-        results.range = feature.attributes['r'].toString();
-        results.section = feature.attributes['s'].toString();
-        results.quarterSection = quadDir.get(feature.attributes['q']);
-        results.quarterQuarterSection = quadDir.get(feature.attributes['qq']);
+          // Store PLSS info
+          results.rangeDirection = dirChar.get(feature.attributes['d']);
+          results.township = feature.attributes['t'].toString();
+          results.range = feature.attributes['r'].toString();
+          results.section = feature.attributes['s'].toString();
+          results.quarterSection = quadDir.get(feature.attributes['q']);
+          results.quarterQuarterSection = quadDir.get(feature.attributes['qq']);
 
-        break;
+          break;
 
-      default:
-        feature = await queryLayer(event.mapPoint, featureLayer, []) as Graphic;
+        default:
+          feature = await queryLayer(event.mapPoint, featureLayer, []) as Graphic;
+      }
+
+      // Add feature to graphics
+      feature.symbol = featureSymbology;
+      results.layer.add(feature);
+
+      // Set results state to loaded
+      results.state = ResultsState.Loaded;
+
+    } catch {
+
+      // Set results state to error
+      results.state = ResultsState.Error;
+
     }
-
-    // Add feature to graphics
-    feature.symbol = featureSymbology;
-    results.layer.add(feature);
   });
 
   // Nearby search
