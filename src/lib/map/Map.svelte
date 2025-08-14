@@ -92,7 +92,18 @@
 
     $view.when().then(()=>{
 
-       // Viewpoint watch handler to update URL path
+      // Set query point if in appState
+      if (appState.query.latitude && appState.query.longitude) {
+        
+        // Simiulate map click
+        const event = {
+          mapPoint: appState.query
+        } as __esri.ViewClickEvent;
+        mapClickHandler(event);
+
+      }
+
+      // Viewpoint watch handler to update URL path
       appState.viewpointWatchHandler($view);
 
     });

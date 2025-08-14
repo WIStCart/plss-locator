@@ -4,6 +4,8 @@ import appConfig from "./app-config.json"
 import { type Config, GA, SearchState } from "./lib/sco-components";
 import { AppState } from "./lib/sco-components";
 import { Results } from "./lib/map/map-click.svelte";
+import { CustomAppState } from "./lib/app-state.svelte.ts";
+
 
 // Config
 export const config = $state(appConfig as Config);
@@ -34,7 +36,7 @@ export let layers = $state(new Layers());
 export const results = $state(new Results());
 
 // App State
-export const appState = new AppState();
+export const appState = new CustomAppState();
 $effect.root(()=>{
   $effect(()=>{
     appState.updateUrl();
