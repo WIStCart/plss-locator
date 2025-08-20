@@ -46,7 +46,7 @@ $effect.root(()=>{
 // Analytics
 export const analytics = new GA(
   config.gaMeasurementId,
-  'SCO App Template'
+  config.appName.short
 );
 
 // Action Bar State
