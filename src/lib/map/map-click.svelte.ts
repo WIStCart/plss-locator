@@ -6,7 +6,7 @@ import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
 
 // App Components
-import { results, view, layers, actionBarState } from "../../store.svelte";
+import { results, view, layers, actionBarState, analytics } from "../../store.svelte";
 import { clickMarkerSymbol } from "../sco-components";
 
 
@@ -187,6 +187,12 @@ export async function mapClickHandler(event:__esri.ViewClickEvent) {
     
     // Push string to list of nearby features
     results.nearby.push(plssString);
+  });
+
+  // Record click to analytics
+  analytics.send("Query Location", "User clicked location on map.", "Map", {
+    latitude: event.mapPoint.latitude,
+    longitude: event.mapPoint.longitude
   });
 
 }
