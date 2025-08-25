@@ -2,11 +2,6 @@
 PLSS Locator is a free tool created by the Wisconsin State Cartographer's Office to help users identify within which Public Land Survey System (PLSS) subdivisions a location resides.
 
 
-## Resources
-- [Analytics](docs/analytics.md)
-- [Development](docs/development.md)
-
-
 ## Config
 
 1. `app-config.json`
