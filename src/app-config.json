@@ -1,0 +1,13 @@
+{
+  "appName": {
+    "full": "Wisconsin PLSS Locator",
+    "short": "PLSS Locator"
+  },
+  "mapPortalId": "2b520d5b0ef14d12a7eec1dfd72ce61d",
+  "oauthAppId": "",
+  "gaMeasurementId": "G-ELVXPBDG4P",
+  "interface": {
+    "titleBreakpoint": 280,
+    "shellBreakpoint": 800
+  }
+}

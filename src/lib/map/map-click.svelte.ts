@@ -1,0 +1,198 @@
+import { get } from "svelte/store";
+
+// ArcGIS Core
+import Graphic from "@arcgis/core/Graphic";
+import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol.js";
+import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
+
+// App Components
+import { results, view, layers, actionBarState, analytics } from "../../store.svelte";
+import { clickMarkerSymbol } from "../sco-components";
+
+
+export enum ResultsState {
+  Cleared = "cleared",
+  Loading = "loading",
+  Loaded = "loaded",
+  Error = "error"
+}
+
+export class Results {
+  public state:ResultsState = $state(ResultsState.Cleared);
+  public latitude:number|undefined = $state();
+  public longitude:number|undefined = $state();
+  public layer:GraphicsLayer = new GraphicsLayer();
+  public township:string|undefined = $state();
+  public range:string|undefined = $state();
+  public rangeDirection:string|undefined = $state();
+  public section:string|undefined = $state();
+  public quarterSection:string|undefined = $state();
+  public quarterQuarterSection:string|undefined = $state();
+  public nearby:string[] = $state([]);
+
+  clear() {
+    // Feature graphics
+    this.layer.removeAll();
+
+    // Marker
+    get(view).graphics.removeAll();
+
+    // PLSS Info
+    this.township = undefined;
+    this.range = undefined;
+    this.rangeDirection = undefined;
+    this.section = undefined;
+    this.quarterSection = undefined;
+    this.quarterQuarterSection = undefined;
+    this.nearby = [];
+  }
+
+  clearAll() {
+    // Coordinate
+    this.latitude = undefined;
+    this.longitude = undefined;
+
+    // Everything else
+    this.clear();
+
+    // Set state
+    this.state = ResultsState.Cleared;
+  }
+}
+
+const dirChar = new Map([
+  [2, 'W'],
+  [4, 'E']
+]);
+
+const quadDir = new Map([
+  [1,'NE'],
+  [2,'NW'],
+  [3,'SW'],
+  [4,'SE']
+]);
+
+const featureSymbology = new SimpleFillSymbol({
+  color: [240, 140, 25, 0.15],
+  outline: {
+    color: "orange",
+    width: 2
+  }
+});
+
+async function queryLayer(queryGeometry:__esri.Point, featureLayer:__esri.FeatureLayer, fields:string[], nearby=false) {
+  
+  // Create query
+  const query:__esri.QueryProperties = {
+    geometry: queryGeometry,
+    outFields: fields,
+    returnGeometry: true
+  }
+
+  // Add distance if querying for nearby
+  if (nearby) query.distance = 15;
+
+  // Run query
+  const queryResult = await featureLayer.queryFeatures(query);
+
+  // Check if more that one feature is returned
+  if (queryResult.features.length > 1 && !nearby) throw(queryResult.features.length, "features returned!");
+  
+  if (nearby) {
+    // If searching nearby, return all features
+    return queryResult.features;
+  } else {
+    // Else only return clicked feature
+    return queryResult.features[0];
+  }
+}
+
+
+export async function mapClickHandler(event:__esri.ViewClickEvent) {
+  // Open results panel if not open already
+  if (actionBarState.activeAction!='results') actionBarState.activeAction='results';
+  if (actionBarState.closed) actionBarState.closed = false;
+
+  // Zoom in more if very zoomed out
+  if (get(view).zoom<12) {
+    // Zoom to level where points are visible
+    get(view).goTo({
+      center: event.mapPoint,
+      zoom: 12
+    })
+  }
+
+  // Store click coordinates
+  results.latitude = event.mapPoint.latitude!;
+  results.longitude = event.mapPoint.longitude!;
+
+  // Set results state to loading
+  results.state = ResultsState.Loading;
+
+  // Clear results
+  results.clear();
+
+  // Add marker to map at click location
+  const clickMarker = new Graphic({
+    geometry: event.mapPoint,
+    symbol: clickMarkerSymbol
+  });
+  get(view).graphics.add(clickMarker);
+
+  // For each feature layer
+  Object.values(layers.featureLayers).forEach(async (featureLayer) => {
+    let feature!:__esri.Graphic;
+
+    // Query the layer
+    try {
+      switch (featureLayer.customParameters?.layer) {
+        case "qqsec":
+          // Get feature
+          feature = await queryLayer(event.mapPoint, featureLayer, ['d','t','r','s','q','qq']) as Graphic;
+
+          // Store PLSS info
+          results.rangeDirection = dirChar.get(feature.attributes['d']);
+          results.township = feature.attributes['t'].toString();
+          results.range = feature.attributes['r'].toString();
+          results.section = feature.attributes['s'].toString();
+          results.quarterSection = quadDir.get(feature.attributes['q']);
+          results.quarterQuarterSection = quadDir.get(feature.attributes['qq']);
+
+          break;
+
+        default:
+          feature = await queryLayer(event.mapPoint, featureLayer, []) as Graphic;
+      }
+
+      // Add feature to graphics
+      feature.symbol = featureSymbology;
+      results.layer.add(feature);
+
+      // Set results state to loaded
+      results.state = ResultsState.Loaded;
+
+    } catch {
+
+      // Set results state to error
+      results.state = ResultsState.Error;
+
+    }
+  });
+
+  // Nearby search
+  const features = await queryLayer(event.mapPoint, layers.featureLayers.quarterQuarterSections!, ['d','t','r','s','q','qq'], true) as Graphic[];
+  features.forEach((feature)=>{
+    // Build PLSS string
+    const plssString = `T${feature.attributes['t'].toString()}N R${feature.attributes['r'].toString()}${dirChar.get(feature.attributes['d'])} S${feature.attributes['s'].toString()} ${quadDir.get(feature.attributes['q'])} ${quadDir.get(feature.attributes['qq'])}`;
+    
+    // Push string to list of nearby features
+    results.nearby.push(plssString);
+  });
+
+  // Record click to analytics
+  analytics.send("Query Location", "User clicked location on map.", "Map", {
+    latitude: event.mapPoint.latitude,
+    longitude: event.mapPoint.longitude
+  });
+
+}
